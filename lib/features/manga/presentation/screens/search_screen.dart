@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
@@ -267,27 +268,24 @@ class _SearchResultCard extends StatelessWidget {
   }
 
   Widget _cachedImage(String url) {
-    return Image.network(
-      url,
+    return CachedNetworkImage(
+      imageUrl: url,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Container(
+      errorWidget: (_, __, ___) => Container(
         color: AppColors.accent.withValues(alpha: 0.1),
         child: const Center(
           child: Icon(Icons.auto_stories, color: AppColors.accent, size: 24),
         ),
       ),
-      loadingBuilder: (_, child, progress) {
-        if (progress == null) return child;
-        return Container(
-          color: AppColors.accent.withValues(alpha: 0.05),
-          child: const Center(
-            child: SizedBox(
-              width: 16, height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+      placeholder: (context, url) => Container(
+        color: AppColors.accent.withValues(alpha: 0.05),
+        child: const Center(
+          child: SizedBox(
+            width: 16, height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

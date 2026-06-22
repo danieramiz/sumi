@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/soft_card.dart';
@@ -148,16 +149,13 @@ class MangaMasonryCard extends StatelessWidget {
   Widget _buildCoverImage() {
     final coverUrl = manga.coverUrl;
     if (coverUrl != null) {
-      return Image.network(
-        coverUrl,
+      return CachedNetworkImage(
+        imageUrl: coverUrl,
         fit: BoxFit.cover,
         width: double.infinity,
         height: 120,
-        errorBuilder: (_, __, ___) => _coverPlaceholder,
-        loadingBuilder: (_, child, progress) {
-          if (progress == null) return child;
-          return _coverPlaceholder;
-        },
+        errorWidget: (_, __, ___) => _coverPlaceholder,
+        placeholder: (context, url) => _coverPlaceholder,
       );
     }
     return _coverPlaceholder;

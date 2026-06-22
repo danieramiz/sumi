@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sumi_app/core/storage/preferences_service.dart';
 import 'package:sumi_app/features/manga/data/services/mangadex_service.dart';
 
@@ -95,16 +96,13 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
           minScale: 0.5,
           maxScale: 4,
           child: Center(
-            child: Image.network(
-              _pageUrls[index],
+            child: CachedNetworkImage(
+              imageUrl: _pageUrls[index],
               fit: BoxFit.contain,
-              loadingBuilder: (_, child, progress) {
-                if (progress == null) return child;
-                return const Center(
-                  child: CircularProgressIndicator(color: Colors.white24),
-                );
-              },
-              errorBuilder: (_, __, ___) => const Center(
+              placeholder: (context, url) => const Center(
+                child: CircularProgressIndicator(color: Colors.white24),
+              ),
+              errorWidget: (_, __, ___) => const Center(
                 child: Icon(Icons.broken_image_rounded, color: Colors.white24, size: 48),
               ),
             ),
@@ -118,20 +116,17 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
     return SingleChildScrollView(
       child: Column(
         children: _pageUrls.map((url) {
-          return Image.network(
-            url,
+          return CachedNetworkImage(
+            imageUrl: url,
             fit: BoxFit.contain,
             width: double.infinity,
-            loadingBuilder: (_, child, progress) {
-              if (progress == null) return child;
-              return const SizedBox(
-                height: 300,
-                child: Center(
-                  child: CircularProgressIndicator(color: Colors.white24),
-                ),
-              );
-            },
-            errorBuilder: (_, __, ___) => const SizedBox(
+            placeholder: (context, url) => const SizedBox(
+              height: 300,
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.white24),
+              ),
+            ),
+            errorWidget: (_, __, ___) => const SizedBox(
               height: 300,
               child: Center(
                 child: Icon(Icons.broken_image_rounded, color: Colors.white24, size: 48),
