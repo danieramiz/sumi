@@ -91,9 +91,37 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                 ),
               ),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: _roundIconButton(Icons.more_horiz_rounded, () {}),
+                PopupMenuButton<String>(
+                  offset: const Offset(0, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  itemBuilder: (ctx) => [
+                    const PopupMenuItem(
+                      value: 'remove',
+                      child: Row(
+                        children: [
+                          Icon(Icons.remove_circle_outline_rounded,
+                              color: AppColors.dropped, size: 20),
+                          SizedBox(width: 10),
+                          Text('Remove from library',
+                              style: TextStyle(color: AppColors.dropped)),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (value) {
+                    if (value == 'remove' && _manga != null) {
+                      context.read<MangaProvider>().removeFromLibrary(_manga!.id);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: IgnorePointer(
+                      child: _roundIconButton(Icons.more_horiz_rounded, () {}),
+                    ),
+                  ),
                 ),
               ],
             ),
