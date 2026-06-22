@@ -141,6 +141,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       final manga = provider.searchResults[index];
                       return _SearchResultCard(
                         manga: manga,
+                        inLibrary: provider.isInLibrary(manga.id),
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -149,6 +150,8 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           );
                         },
+                        onAdd: () => provider.addToLibrary(manga),
+                        onRemove: () => provider.removeFromLibrary(manga.id),
                       );
                     },
                   ),
@@ -163,9 +166,18 @@ class _SearchScreenState extends State<SearchScreen> {
 
 class _SearchResultCard extends StatelessWidget {
   final Manga manga;
+  final bool inLibrary;
   final VoidCallback onTap;
+  final VoidCallback onAdd;
+  final VoidCallback onRemove;
 
-  const _SearchResultCard({required this.manga, required this.onTap});
+  const _SearchResultCard({
+    required this.manga,
+    required this.inLibrary,
+    required this.onTap,
+    required this.onAdd,
+    required this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +188,7 @@ class _SearchResultCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.card),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
           child: Row(
             children: [
               ClipRRect(
@@ -227,9 +239,12 @@ class _SearchResultCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.secondaryText,
+              IconButton(
+                icon: Icon(
+                  inLibrary ? Icons.check_circle_rounded : Icons.add_circle_outline_rounded,
+                  color: inLibrary ? AppColors.reading : AppColors.accent,
+                ),
+                onPressed: inLibrary ? onRemove : onAdd,
               ),
             ],
           ),

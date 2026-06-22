@@ -36,6 +36,8 @@ dependencies:
   provider: ^6.1.2
   google_fonts: ^6.2.1
   http: ^1.2.0
+  crypto: ^3.0.7
+  webview_flutter: ^4.13.0
 
 
 dev_dependencies:
