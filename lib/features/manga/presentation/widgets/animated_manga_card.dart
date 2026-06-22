@@ -29,11 +29,11 @@ class _AnimatedMangaCardState extends State<AnimatedMangaCard>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 500),
     );
 
     _slide = Tween<Offset>(
-      begin: const Offset(0, 0.06),
+      begin: const Offset(0, 0.12),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _controller,
@@ -45,7 +45,9 @@ class _AnimatedMangaCardState extends State<AnimatedMangaCard>
     );
 
     final delay = Duration(milliseconds: widget.index * 75);
-    Future.delayed(delay, _controller.forward);
+    Future.delayed(delay, () {
+      if (mounted) _controller.forward();
+    });
   }
 
   @override
