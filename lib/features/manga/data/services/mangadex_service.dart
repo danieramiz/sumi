@@ -117,6 +117,17 @@ class MangaDexService {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  int parseTotalChapters(Map<String, dynamic> aggregate) {
+    final volumes = aggregate['volumes'] as Map<String, dynamic>? ?? {};
+    final chapters = <String>{};
+    for (final vol in volumes.values) {
+      final volMap = vol as Map<String, dynamic>;
+      final chs = volMap['chapters'] as Map<String, dynamic>? ?? {};
+      chapters.addAll(chs.keys);
+    }
+    return chapters.length;
+  }
+
   Future<bool> followManga(String mangaId, String token) async {
     final response = await _client.post(
       Uri.parse('$_baseUrl/manga/$mangaId/follow'),

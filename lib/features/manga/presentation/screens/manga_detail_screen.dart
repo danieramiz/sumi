@@ -23,6 +23,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   Manga? _manga;
   bool _loading = true;
   List<Chapter> _chapters = [];
+  int _totalChapters = 0;
   bool _chaptersAscending = false;
 
 
@@ -41,10 +42,12 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     if (manga != null) {
       _chaptersAscending = PreferencesService.instance.chaptersAscending;
       final chapters = await provider.fetchChapters(manga.id, ascending: _chaptersAscending);
+      final totalCh = await provider.fetchTotalChapters(manga.id);
       if (mounted) {
         setState(() {
           _manga = manga;
           _chapters = chapters;
+          _totalChapters = totalCh;
           _loading = false;
         });
       }
@@ -302,6 +305,9 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   }
 
   Widget _buildCurrentlyReading(BuildContext context, Manga manga) {
+    final progress = _totalChapters > 0
+        ? (manga.currentChapter / _totalChapters).clamp(0.0, 1.0)
+        : manga.progress;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -319,44 +325,33 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 8),
-        ProgressBar(progress: manga.progress),
+        ProgressBar(progress: progress),
       ],
     );
   }
 
   Widget _buildNextChapter(BuildContext context, Manga manga) {
+    final latestDate = _chapters.isNotEmpty && _chapters.first.publishDate != null
+        ? _chapters.first.publishDate!
+        : null;
+    final dateStr = latestDate != null
+        ? 'Latest: ${latestDate.month}/${latestDate.day}/${latestDate.year}'
+        : 'TBD';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _metricLabel('Next Chapter'),
+        _metricLabel('Latest Chapter'),
         const SizedBox(height: 6),
         Text(
-          'Ch. ${(manga.currentChapter + 1).toInt()}',
+          'Ch. ${(manga.currentChapter).toInt()}',
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 color: AppColors.primaryText,
               ),
         ),
         const SizedBox(height: 4),
         Text(
-          manga.nextChapterInfo ?? 'TBD',
+          dateStr,
           style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: List.generate(7, (i) {
-            return Expanded(
-              child: Container(
-                height: 3,
-                margin: const EdgeInsets.symmetric(horizontal: 1),
-                decoration: BoxDecoration(
-                  color: i < 3
-                      ? AppColors.accent
-                      : AppColors.progressBg,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            );
-          }),
         ),
       ],
     );
@@ -393,7 +388,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   }
 
   Widget _buildChaptersRead(BuildContext context, Manga manga) {
-    final total = manga.totalChapters ?? (manga.currentChapter + 50);
+    final total = _totalChapters > 0 ? _totalChapters : (manga.currentChapter + 50).toInt();
     final pct = ((manga.currentChapter / total) * 100).toInt();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
