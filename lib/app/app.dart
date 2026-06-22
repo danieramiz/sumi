@@ -27,7 +27,6 @@ class _SumiAppState extends State<SumiApp> {
   @override
   void dispose() {
     _authProvider.dispose();
-    _mangaProvider.dispose();
     super.dispose();
   }
 
