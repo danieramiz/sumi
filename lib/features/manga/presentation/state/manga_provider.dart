@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:sumi_app/core/storage/preferences_service.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_provider.dart';
 import 'package:sumi_app/features/manga/data/mock/mock_data.dart';
 import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
@@ -81,7 +82,8 @@ class MangaProvider extends ChangeNotifier {
 
   Future<int> fetchTotalChapters(String mangaId) async {
     try {
-      final data = await _api.getMangaAggregate(mangaId);
+      final lang = PreferencesService.instance.language;
+      final data = await _api.getMangaAggregate(mangaId, language: lang);
       return _api.parseTotalChapters(data);
     } catch (_) {
       return 0;
@@ -90,7 +92,9 @@ class MangaProvider extends ChangeNotifier {
 
   Future<List<Chapter>> fetchChapters(String mangaId, {bool ascending = false}) async {
     try {
-      final dtos = await _api.getChapters(mangaId, limit: 20, ascending: ascending);
+      final lang = PreferencesService.instance.language;
+      final dtos = await _api.getChapters(mangaId,
+          limit: 20, ascending: ascending, language: lang);
       Set<String> readIds = {};
       final token = _authProvider?.accessToken;
       if (token != null) {

@@ -10,6 +10,7 @@ import 'package:sumi_app/features/manga/presentation/widgets/floating_circle_but
 import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
 import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen.dart';
 import 'package:sumi_app/features/manga/presentation/screens/search_screen.dart';
+import 'package:sumi_app/features/settings/presentation/screens/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -304,6 +305,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
+                _menuItem(
+                  ctx,
+                  Icons.settings_rounded,
+                  'Settings',
+                  () {
+                    Navigator.of(ctx).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const SettingsScreen()),
+                    );
+                  },
+                ),
                 if (auth.isAuthenticated)
                   _menuItem(
                     ctx,

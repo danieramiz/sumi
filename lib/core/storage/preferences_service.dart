@@ -11,6 +11,7 @@ class PreferencesService {
 
   bool chaptersAscending = false;
   bool readerScrollMode = false;
+  String language = 'en';
 
   Future<void> load() async {
     try {
@@ -21,6 +22,7 @@ class PreferencesService {
       final data = jsonDecode(content) as Map<String, dynamic>;
       chaptersAscending = data['chaptersAscending'] as bool? ?? false;
       readerScrollMode = data['readerScrollMode'] as bool? ?? false;
+      language = data['language'] as String? ?? 'en';
     } catch (_) {}
   }
 
@@ -31,6 +33,7 @@ class PreferencesService {
       await file.writeAsString(jsonEncode({
         'chaptersAscending': chaptersAscending,
         'readerScrollMode': readerScrollMode,
+        'language': language,
       }));
     } catch (_) {}
   }

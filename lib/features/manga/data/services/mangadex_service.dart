@@ -73,11 +73,12 @@ class MangaDexService {
     );
   }
 
-  Future<List<ChapterDto>> getChapters(String mangaId, {int limit = 20, bool ascending = false}) async {
+  Future<List<ChapterDto>> getChapters(String mangaId,
+      {int limit = 20, bool ascending = false, String language = 'en'}) async {
     final uri = Uri.parse('$_baseUrl/manga/$mangaId/feed').replace(
       queryParameters: {
         'limit': limit.toString(),
-        'translatedLanguage[]': ApiConfig.defaultLang,
+        'translatedLanguage[]': language,
         'order[chapter]': ascending ? 'asc' : 'desc',
       },
     );
@@ -106,9 +107,10 @@ class MangaDexService {
   Future<Map<String, dynamic>> getMangaAggregate(
     String mangaId, {
     String? token,
+    String language = 'en',
   }) async {
     final uri = Uri.parse('$_baseUrl/manga/$mangaId/aggregate').replace(
-        queryParameters: {'translatedLanguage[]': ApiConfig.defaultLang},
+      queryParameters: {'translatedLanguage[]': language},
     );
     final response = await _client.get(
       uri,
