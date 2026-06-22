@@ -21,6 +21,7 @@ class MangaDexService {
       'offset': offset.toString(),
       'contentRating[]': ['safe', 'suggestive'],
       'order[followedCount]': 'desc',
+      'includes[]': 'cover_art',
     };
     if (title != null && title.isNotEmpty) {
       params['title'] = title;
