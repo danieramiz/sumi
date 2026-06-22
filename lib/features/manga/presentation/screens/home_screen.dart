@@ -27,6 +27,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final auth = context.watch<AuthProvider>();
     final mangaProvider = context.watch<MangaProvider>();
 
+    if (!auth.initialized) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (_showWelcome && !auth.isAuthenticated) {
       return _buildWelcomeScreen(context);
     }

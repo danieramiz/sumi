@@ -6,6 +6,7 @@ class MangaDto {
   final double? lastChapter;
   final List<String> genres;
   final String? coverFileName;
+  final String? author;
 
   MangaDto({
     required this.id,
@@ -15,6 +16,7 @@ class MangaDto {
     this.lastChapter,
     required this.genres,
     this.coverFileName,
+    this.author,
   });
 
   String get preferredTitle {
@@ -33,11 +35,16 @@ class MangaDto {
     final relationships = json['relationships'] as List<dynamic>? ?? [];
 
     String? coverFileName;
+    String? author;
     for (final rel in relationships) {
       final relMap = rel as Map<String, dynamic>;
-      if (relMap['type'] == 'cover_art') {
+      final type = relMap['type'] as String?;
+      if (type == 'cover_art') {
         final relAttr = relMap['attributes'] as Map<String, dynamic>?;
         coverFileName = relAttr?['fileName'] as String?;
+      } else if (type == 'author') {
+        final relAttr = relMap['attributes'] as Map<String, dynamic>?;
+        author = relAttr?['name'] as String?;
       }
     }
 
@@ -64,6 +71,7 @@ class MangaDto {
           .where((n) => n.isNotEmpty)
           .toList(),
       coverFileName: coverFileName,
+      author: author,
     );
   }
 }

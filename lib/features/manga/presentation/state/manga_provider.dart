@@ -53,8 +53,22 @@ class MangaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Chapter> getRecentChapters(String mangaId) {
-    return mockRecentChapters;
+  Future<List<Chapter>> fetchChapters(String mangaId) async {
+    try {
+      final dtos = await _api.getChapters(mangaId, limit: 10);
+      return dtos.map((d) {
+        return Chapter(
+          id: d.id,
+          chapterNumber: d.chapterNumber ?? 0,
+          title: d.title,
+          publishDate:
+              d.publishDate != null ? DateTime.tryParse(d.publishDate!) : null,
+          isRead: false,
+        );
+      }).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<void> fetchLibrary() async {
@@ -72,7 +86,7 @@ class MangaProvider extends ChangeNotifier {
         return Manga(
           id: dto.id,
           title: dto.preferredTitle,
-          author: '',
+          author: dto.author ?? '',
           coverUrl:
               dto.coverFileName != null
                   ? _api.coverUrl(dto.id, dto.coverFileName!)
@@ -109,7 +123,7 @@ class MangaProvider extends ChangeNotifier {
         return Manga(
           id: dto.id,
           title: dto.preferredTitle,
-          author: '',
+          author: dto.author ?? '',
           coverUrl:
               dto.coverFileName != null
                   ? _api.coverUrl(dto.id, dto.coverFileName!)
@@ -138,7 +152,7 @@ class MangaProvider extends ChangeNotifier {
       return Manga(
         id: dto.id,
         title: dto.preferredTitle,
-        author: '',
+        author: dto.author ?? '',
         coverUrl:
             dto.coverFileName != null
                 ? _api.coverUrl(dto.id, dto.coverFileName!)

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sumi_app/app/theme.dart';
-import 'package:sumi_app/features/manga/data/mock/mock_data.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
+import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/soft_card.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/status_pill.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/progress_bar.dart';
@@ -20,6 +20,8 @@ class MangaDetailScreen extends StatefulWidget {
 class _MangaDetailScreenState extends State<MangaDetailScreen> {
   Manga? _manga;
   bool _loading = true;
+  List<Chapter> _chapters = [];
+
 
   @override
   void initState() {
@@ -33,9 +35,17 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     if (manga == null) {
       manga = await provider.fetchMangaDetails(widget.mangaId);
     }
-    if (mounted) {
+    if (manga != null) {
+      final chapters = await provider.fetchChapters(manga.id);
+      if (mounted) {
+        setState(() {
+          _manga = manga;
+          _chapters = chapters;
+          _loading = false;
+        });
+      }
+    } else if (mounted) {
       setState(() {
-        _manga = manga;
         _loading = false;
       });
     }
@@ -507,7 +517,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   }
 
   Widget _buildRecentChapters(BuildContext context, Manga manga) {
-    final chapters = mockRecentChapters;
+    final chapters = _chapters;
 
     return SliverToBoxAdapter(
       child: Column(
@@ -528,6 +538,9 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
               separatorBuilder: (_, __) => const SizedBox(width: 10),
               itemBuilder: (context, index) {
                 final ch = chapters[index];
+                final dateStr = ch.publishDate != null
+                    ? '${ch.publishDate!.month}/${ch.publishDate!.day}'
+                    : null;
                 return SoftCard(
                   borderRadius: 20,
                   padding: const EdgeInsets.symmetric(
@@ -538,13 +551,25 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Ch. ${ch.chapterNumber.toInt()}',
+                        ch.chapterNumber > 0
+                            ? 'Ch. ${ch.chapterNumber.toInt()}'
+                            : 'Ch. ?',
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primaryText,
                         ),
                       ),
+                      if (dateStr != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          dateStr,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: AppColors.secondaryText,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 4),
                       Container(
                         width: 8,
