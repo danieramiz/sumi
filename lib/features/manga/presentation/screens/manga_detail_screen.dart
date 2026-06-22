@@ -53,6 +53,15 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     }
   }
 
+  Future<void> _loadChapters() async {
+    if (_manga == null) return;
+    final provider = context.read<MangaProvider>();
+    final chapters = await provider.fetchChapters(_manga!.id);
+    if (mounted) {
+      setState(() => _chapters = chapters);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -631,7 +640,18 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => ChapterReaderScreen(chapterId: ch.id),
+                        builder: (_) => ChapterReaderScreen(
+                          chapterId: ch.id,
+                          onClose: () {
+                            if (_manga != null) {
+                              context.read<MangaProvider>().markChapterRead(
+                                _manga!.id, ch.id,
+                              ).then((_) {
+                                _loadChapters();
+                              });
+                            }
+                          },
+                        ),
                       ),
                     );
                   },

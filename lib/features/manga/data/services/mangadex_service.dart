@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sumi_app/features/manga/data/models/chapter_dto.dart';
+import 'package:sumi_app/features/manga/data/models/chapter_pages_dto.dart';
 import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 
 class MangaDexService {
@@ -87,6 +88,18 @@ class MangaDexService {
     ).data;
   }
 
+  Future<ChapterPagesDto> getChapterPages(String chapterId) async {
+    final response = await _client.get(
+      Uri.parse('$_baseUrl/at-home/server/$chapterId'),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('MangaDex API error: ${response.statusCode}');
+    }
+    return ChapterPagesDto.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
   Future<Map<String, dynamic>> getMangaAggregate(
     String mangaId, {
     String? token,
@@ -133,10 +146,11 @@ class MangaDexService {
     return {};
   }
 
-  Future<bool> markChapterRead(String chapterId, String token) async {
+  Future<bool> markChapterRead(String mangaId, String chapterId, String token) async {
     final response = await _client.post(
-      Uri.parse('$_baseUrl/manga/$chapterId/read'),
+      Uri.parse('$_baseUrl/manga/$mangaId/read'),
       headers: _headers(token: token),
+      body: jsonEncode({'chapterIdsRead': [chapterId]}),
     );
     return response.statusCode == 200 || response.statusCode == 201;
   }
