@@ -574,7 +574,11 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                 final dateStr = ch.publishDate != null
                     ? timeAgo(ch.publishDate!)
                     : null;
-                return SoftCard(
+                return GestureDetector(
+                  onLongPress: _manga != null
+                      ? () => _showChapterMenu(context, ch, index)
+                      : null,
+                  child: SoftCard(
                   borderRadius: 20,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -634,11 +638,116 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                       ),
                     ],
                   ),
-                );
+                ),
+              );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showChapterMenu(
+      BuildContext context, Chapter chapter, int index) {
+    final provider = context.read<MangaProvider>();
+    final hasPrevUnread = _chapters
+        .sublist(index + 1)
+        .any((c) => !c.isRead);
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryText.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Ch. ${chapter.chapterNumber.toInt()}',
+                  style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w700,
+                    color: AppColors.primaryText,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (hasPrevUnread)
+                  _menuAction(
+                    ctx,
+                    Icons.done_all_rounded,
+                    'Mark this and all previous as read',
+                    () {
+                      Navigator.of(ctx).pop();
+                      final ids = <String>[chapter.id];
+                      for (int i = index + 1; i < _chapters.length; i++) {
+                        if (!_chapters[i].isRead) ids.add(_chapters[i].id);
+                      }
+                      provider.markChaptersRead(_manga!.id, ids)
+                          .then((_) => _loadChapters());
+                    },
+                  ),
+                _menuAction(
+                  ctx,
+                  Icons.check_rounded,
+                  'Mark as read',
+                  () {
+                    Navigator.of(ctx).pop();
+                    provider.markChapterRead(_manga!.id, chapter.id)
+                        .then((_) => _loadChapters());
+                  },
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('Cancel',
+                        style: TextStyle(color: AppColors.secondaryText)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _menuAction(
+      BuildContext context, IconData icon, String label, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.accent, size: 22),
+              const SizedBox(width: 14),
+              Text(
+                label,
+                style: const TextStyle(
+                    fontSize: 15, color: AppColors.primaryText),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

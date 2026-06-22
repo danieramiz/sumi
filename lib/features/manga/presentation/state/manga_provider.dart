@@ -141,6 +141,13 @@ class MangaProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> markChaptersRead(String mangaId, List<String> chapterIds) async {
+    final token = _authProvider?.accessToken;
+    if (token != null) {
+      await _api.markChaptersRead(mangaId, chapterIds, token);
+    }
+  }
+
   Future<void> searchManga(String query) async {
     _isLoading = true;
     _error = null;
