@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_provider.dart';
+import 'package:sumi_app/features/manga/data/mock/mock_data.dart';
 import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 import 'package:sumi_app/features/manga/data/services/mangadex_service.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
@@ -9,7 +10,7 @@ class MangaProvider extends ChangeNotifier {
   final MangaDexService _api = MangaDexService();
   AuthProvider? _authProvider;
 
-  List<Manga> _followedManga = [];
+  List<Manga> _followedManga = mockMangaList;
   List<Manga> get followedManga => _followedManga;
 
   List<Manga> _searchResults = [];
@@ -120,6 +121,9 @@ class MangaProvider extends ChangeNotifier {
       _followedManga = response.data.map(_fromDto).toList();
     } catch (e) {
       _error = 'Failed to load library: $e';
+      if (_followedManga.isEmpty) {
+        _followedManga = mockMangaList;
+      }
     }
 
     _isLibraryLoading = false;
