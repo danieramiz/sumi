@@ -6,6 +6,7 @@ import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/soft_card.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/status_pill.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/progress_bar.dart';
+import 'package:sumi_app/features/manga/presentation/screens/chapter_reader_screen.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
 
 class MangaDetailScreen extends StatefulWidget {
@@ -627,6 +628,13 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                     horizontal: 16,
                     vertical: 12,
                   ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ChapterReaderScreen(chapterId: ch.id),
+                      ),
+                    );
+                  },
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
