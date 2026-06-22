@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 import 'package:sumi_app/features/manga/data/models/chapter_dto.dart';
+import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 
 class MangaDexService {
   static const _baseUrl = 'https://api.mangadex.org';
@@ -118,6 +118,16 @@ class MangaDexService {
       headers: _headers(token: token),
     );
     return response.statusCode == 200 || response.statusCode == 204;
+  }
+
+  Future<bool> setReadingStatus(
+      String mangaId, String status, String token) async {
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/manga/$mangaId/status'),
+      headers: _headers(token: token),
+      body: jsonEncode({'status': status}),
+    );
+    return response.statusCode == 200 || response.statusCode == 201;
   }
 
   String coverUrl(String mangaId, String fileName, {int size = 512}) {

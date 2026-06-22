@@ -48,6 +48,7 @@ class MangaProvider extends ChangeNotifier {
     notifyListeners();
     if (token != null) {
       await _api.followManga(manga.id, token);
+      await _api.setReadingStatus(manga.id, 'reading', token);
     }
   }
 
