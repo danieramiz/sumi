@@ -120,6 +120,27 @@ class MangaDexService {
     return response.statusCode == 200 || response.statusCode == 204;
   }
 
+  Future<Set<String>> getReadChapters(String mangaId, String token) async {
+    final response = await _client.get(
+      Uri.parse('$_baseUrl/manga/$mangaId/read'),
+      headers: _headers(token: token),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final list = data['data'] as List<dynamic>? ?? [];
+      return list.map((e) => e.toString()).toSet();
+    }
+    return {};
+  }
+
+  Future<bool> markChapterRead(String chapterId, String token) async {
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/manga/$chapterId/read'),
+      headers: _headers(token: token),
+    );
+    return response.statusCode == 200 || response.statusCode == 201;
+  }
+
   Future<bool> setReadingStatus(
       String mangaId, String status, String token) async {
     final response = await _client.post(

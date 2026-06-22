@@ -64,6 +64,11 @@ class MangaProvider extends ChangeNotifier {
   Future<List<Chapter>> fetchChapters(String mangaId, {bool ascending = false}) async {
     try {
       final dtos = await _api.getChapters(mangaId, limit: 20, ascending: ascending);
+      Set<String> readIds = {};
+      final token = _authProvider?.accessToken;
+      if (token != null) {
+        readIds = await _api.getReadChapters(mangaId, token);
+      }
       return dtos.map((d) {
         return Chapter(
           id: d.id,
@@ -71,7 +76,7 @@ class MangaProvider extends ChangeNotifier {
           title: d.title,
           publishDate:
               d.publishDate != null ? DateTime.tryParse(d.publishDate!) : null,
-          isRead: false,
+          isRead: readIds.contains(d.id),
         );
       }).toList();
     } catch (_) {
