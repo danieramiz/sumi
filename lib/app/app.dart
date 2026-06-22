@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_provider.dart';
 import 'package:sumi_app/features/manga/presentation/screens/home_screen.dart';
+import 'package:sumi_app/core/storage/preferences_service.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
 
 class SumiApp extends StatefulWidget {
@@ -18,6 +19,7 @@ class _SumiAppState extends State<SumiApp> {
   @override
   void initState() {
     super.initState();
+    PreferencesService.instance.load();
     _authProvider.initialize();
   }
 

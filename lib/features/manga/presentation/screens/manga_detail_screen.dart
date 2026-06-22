@@ -5,6 +5,7 @@ import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/soft_card.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/status_pill.dart';
+import 'package:sumi_app/core/storage/preferences_service.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/progress_bar.dart';
 import 'package:sumi_app/features/manga/presentation/screens/chapter_reader_screen.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
@@ -38,7 +39,8 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
       manga = await provider.fetchMangaDetails(widget.mangaId);
     }
     if (manga != null) {
-      final chapters = await provider.fetchChapters(manga.id);
+      _chaptersAscending = PreferencesService.instance.chaptersAscending;
+      final chapters = await provider.fetchChapters(manga.id, ascending: _chaptersAscending);
       if (mounted) {
         setState(() {
           _manga = manga;
@@ -557,12 +559,14 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
 
   Future<void> _toggleChapterSort() async {
     if (_manga == null) return;
-    final newOrder = !_chaptersAscending;
+    final prefs = PreferencesService.instance;
+    prefs.chaptersAscending = !prefs.chaptersAscending;
+    await prefs.save();
     final provider = context.read<MangaProvider>();
-    final chapters = await provider.fetchChapters(_manga!.id, ascending: newOrder);
+    final chapters = await provider.fetchChapters(_manga!.id, ascending: prefs.chaptersAscending);
     if (mounted) {
       setState(() {
-        _chaptersAscending = newOrder;
+        _chaptersAscending = prefs.chaptersAscending;
         _chapters = chapters;
       });
     }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sumi_app/core/storage/preferences_service.dart';
 import 'package:sumi_app/features/manga/data/services/mangadex_service.dart';
 
 enum ReadingMode { paged, scroll }
@@ -25,6 +26,9 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
   @override
   void initState() {
     super.initState();
+    _mode = PreferencesService.instance.readerScrollMode
+        ? ReadingMode.scroll
+        : ReadingMode.paged;
     _loadPages();
   }
 
@@ -210,6 +214,9 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: () {
+                      final prefs = PreferencesService.instance;
+                      prefs.readerScrollMode = _mode != ReadingMode.scroll;
+                      prefs.save();
                       setState(() {
                         _mode = _mode == ReadingMode.paged
                             ? ReadingMode.scroll
