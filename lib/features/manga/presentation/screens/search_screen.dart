@@ -5,6 +5,7 @@ import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
 import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen.dart';
+import 'package:sumi_app/features/manga/presentation/widgets/cover_placeholder.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -259,33 +260,15 @@ class _SearchResultCard extends StatelessWidget {
     if (coverUrl != null) {
       return _cachedImage(coverUrl);
     }
-    return Container(
-      color: AppColors.accent.withValues(alpha: 0.1),
-      child: const Center(
-        child: Icon(Icons.auto_stories, color: AppColors.accent, size: 24),
-      ),
-    );
+    return const CoverPlaceholder(width: 56, height: 80);
   }
 
   Widget _cachedImage(String url) {
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
-      errorWidget: (_, __, ___) => Container(
-        color: AppColors.accent.withValues(alpha: 0.1),
-        child: const Center(
-          child: Icon(Icons.auto_stories, color: AppColors.accent, size: 24),
-        ),
-      ),
-      placeholder: (context, url) => Container(
-        color: AppColors.accent.withValues(alpha: 0.05),
-        child: const Center(
-          child: SizedBox(
-            width: 16, height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-      ),
+      errorWidget: (_, __, ___) => const CoverPlaceholder(width: 56, height: 80),
+      placeholder: (context, url) => const CoverPlaceholder(width: 56, height: 80),
     );
   }
 }

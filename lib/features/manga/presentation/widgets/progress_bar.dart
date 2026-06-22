@@ -11,22 +11,11 @@ class ProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
-      child: SizedBox(
-        height: 4,
-        child: Stack(
-          children: [
-            Container(
-              width: double.infinity,
-              color: AppColors.progressBg,
-            ),
-            FractionallySizedBox(
-              widthFactor: progress.clamp(0.0, 1.0),
-              child: Container(
-                color: color ?? AppColors.accent,
-              ),
-            ),
-          ],
-        ),
+      child: LinearProgressIndicator(
+        value: progress.clamp(0.0, 1.0),
+        backgroundColor: AppColors.progressBg,
+        valueColor: AlwaysStoppedAnimation(color ?? AppColors.accent),
+        minHeight: 4,
       ),
     );
   }

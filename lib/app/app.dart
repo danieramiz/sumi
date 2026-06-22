@@ -15,6 +15,7 @@ class SumiApp extends StatefulWidget {
 
 class _SumiAppState extends State<SumiApp> {
   final _authProvider = AuthProvider();
+  final _mangaProvider = MangaProvider();
 
   @override
   void initState() {
@@ -26,6 +27,7 @@ class _SumiAppState extends State<SumiApp> {
   @override
   void dispose() {
     _authProvider.dispose();
+    _mangaProvider.dispose();
     super.dispose();
   }
 
@@ -35,8 +37,8 @@ class _SumiAppState extends State<SumiApp> {
       providers: [
         ChangeNotifierProvider.value(value: _authProvider),
         ChangeNotifierProxyProvider<AuthProvider, MangaProvider>(
-          create: (_) => MangaProvider(),
-          update: (_, auth, manga) => MangaProvider(authProvider: auth),
+          create: (_) => _mangaProvider,
+          update: (_, auth, manga) => manga!..updateAuth(auth),
         ),
       ],
       child: MaterialApp(

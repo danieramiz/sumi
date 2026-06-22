@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
 
-    final mangas = mangaProvider.mangaList;
+    final mangas = mangaProvider.followedManga;
 
     return Scaffold(
       body: SafeArea(

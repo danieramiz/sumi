@@ -4,14 +4,13 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:sumi_app/core/constants/api_config.dart';
 
 class MangaDexAuthService {
-  static const _authUrl =
-      'https://auth.mangadex.org/realms/mangadex/protocol/openid-connect/auth';
-  static const _tokenUrl =
-      'https://auth.mangadex.org/realms/mangadex/protocol/openid-connect/token';
-  static const _redirectUri = 'https://mangadex.org/auth/login';
-  static const _clientId = 'mangadex-frontend-stable';
+  static const _authUrl = ApiConfig.mangadexAuthUrl;
+  static const _tokenUrl = ApiConfig.mangadexTokenUrl;
+  static const _redirectUri = ApiConfig.mangadexRedirectUri;
+  static const _clientId = ApiConfig.mangadexClientId;
   static const _tokenFileName = 'sumi_auth_token.json';
 
   final http.Client _client;

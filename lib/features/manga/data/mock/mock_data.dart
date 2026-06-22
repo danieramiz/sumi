@@ -1,5 +1,4 @@
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
-import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
 
 final List<Manga> mockMangaList = [
   Manga(
@@ -179,36 +178,4 @@ final List<Manga> mockMangaList = [
   ),
 ];
 
-final List<Chapter> mockRecentChapters = [
-  const Chapter(
-    id: 'c1',
-    chapterNumber: 1113,
-    title: 'The Adventure Continues',
-    publishDate: null,
-    isRead: true,
-  ),
-  const Chapter(
-    id: 'c2',
-    chapterNumber: 1112,
-    title: 'Straw Hat Pirates',
-    publishDate: null,
-    isRead: true,
-  ),
-  const Chapter(
-    id: 'c3',
-    chapterNumber: 1111,
-    title: 'New World',
-    publishDate: null,
-    isRead: false,
-  ),
-  const Chapter(
-    id: 'c4',
-    chapterNumber: 1110,
-    isRead: false,
-  ),
-  const Chapter(
-    id: 'c5',
-    chapterNumber: 1109,
-    isRead: true,
-  ),
-];
+

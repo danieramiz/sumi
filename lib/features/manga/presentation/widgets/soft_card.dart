@@ -6,6 +6,7 @@ class SoftCard extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final double borderRadius;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final Color? color;
 
   const SoftCard({
@@ -14,6 +15,7 @@ class SoftCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.borderRadius = AppRadius.card,
     this.onTap,
+    this.onLongPress,
     this.color,
   });
 
@@ -35,6 +37,7 @@ class SoftCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(borderRadius),
           child: card,
         ),

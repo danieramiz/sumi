@@ -1,18 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_provider.dart';
-import 'package:sumi_app/features/manga/data/mock/mock_data.dart';
+import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 import 'package:sumi_app/features/manga/data/services/mangadex_service.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
 
 class MangaProvider extends ChangeNotifier {
   final MangaDexService _api = MangaDexService();
-  final AuthProvider? _authProvider;
+  AuthProvider? _authProvider;
 
   List<Manga> _followedManga = [];
   List<Manga> get followedManga => _followedManga;
-
-  List<Manga> get mangaList => _followedManga;
 
   List<Manga> _searchResults = [];
   List<Manga> get searchResults => _searchResults;
@@ -26,15 +24,34 @@ class MangaProvider extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
-  MangaProvider({AuthProvider? authProvider}) : _authProvider = authProvider {
-    _followedManga = mockMangaList;
+  void updateAuth(AuthProvider? auth) {
+    _authProvider = auth;
+  }
+
+  Manga _fromDto(MangaDto dto) {
+    return Manga(
+      id: dto.id,
+      title: dto.preferredTitle,
+      author: dto.author ?? '',
+      coverUrl: dto.coverFileName != null ? _api.coverUrl(dto.id, dto.coverFileName!) : null,
+      description: dto.preferredDescription,
+      genres: dto.genres,
+      status: _parseStatus(dto.status),
+      currentChapter: dto.lastChapter ?? 0,
+      progress: 0,
+      lastUpdate: dto.updatedAt ?? DateTime.now(),
+    );
   }
 
   Manga? getMangaById(String id) {
     try {
       return _followedManga.firstWhere((m) => m.id == id);
     } catch (_) {
-      return _searchResults.firstWhere((m) => m.id == id);
+      try {
+        return _searchResults.firstWhere((m) => m.id == id);
+      } catch (_) {
+        return null;
+      }
     }
   }
 
@@ -78,16 +95,13 @@ class MangaProvider extends ChangeNotifier {
       if (token != null) {
         readIds = await _api.getReadChapters(mangaId, token);
       }
-      return dtos.map((d) {
-        return Chapter(
-          id: d.id,
-          chapterNumber: d.chapterNumber ?? 0,
-          title: d.title,
-          publishDate:
-              d.publishDate != null ? DateTime.tryParse(d.publishDate!) : null,
-          isRead: readIds.contains(d.id),
-        );
-      }).toList();
+      return dtos.map((d) => Chapter(
+        id: d.id,
+        chapterNumber: d.chapterNumber ?? 0,
+        title: d.title,
+        publishDate: d.publishDate != null ? DateTime.tryParse(d.publishDate!) : null,
+        isRead: readIds.contains(d.id),
+      )).toList();
     } catch (_) {
       return [];
     }
@@ -103,30 +117,9 @@ class MangaProvider extends ChangeNotifier {
 
     try {
       final response = await _api.getFollowedManga(token, limit: 100);
-      _followedManga = response.data.map((dto) {
-        final status = _parseStatus(dto.status);
-        return Manga(
-          id: dto.id,
-          title: dto.preferredTitle,
-          author: dto.author ?? '',
-          coverUrl:
-              dto.coverFileName != null
-                  ? _api.coverUrl(dto.id, dto.coverFileName!)
-                  : null,
-          description: dto.preferredDescription,
-          genres: dto.genres,
-          status: status,
-          currentChapter: dto.lastChapter ?? 0,
-          progress: 0,
-          lastUpdate: dto.updatedAt ?? DateTime.now(),
-        );
-      }).toList();
-      if (_followedManga.isEmpty) {
-        _followedManga = mockMangaList;
-      }
+      _followedManga = response.data.map(_fromDto).toList();
     } catch (e) {
-      _error = 'Failed to load library. Showing sample data.';
-      _followedManga = mockMangaList;
+      _error = 'Failed to load library: $e';
     }
 
     _isLibraryLoading = false;
@@ -144,32 +137,13 @@ class MangaProvider extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
       final response = await _api.searchManga(title: query, limit: 20);
-      _searchResults = response.data.map((dto) {
-        final status = _parseStatus(dto.status);
-        return Manga(
-          id: dto.id,
-          title: dto.preferredTitle,
-          author: dto.author ?? '',
-          coverUrl:
-              dto.coverFileName != null
-                  ? _api.coverUrl(dto.id, dto.coverFileName!)
-                  : null,
-          description: dto.preferredDescription,
-          genres: dto.genres,
-          status: status,
-          currentChapter: dto.lastChapter ?? 0,
-          progress: 0,
-          lastUpdate: dto.updatedAt ?? DateTime.now(),
-        );
-      }).toList();
+      _searchResults = response.data.map(_fromDto).toList();
     } catch (e) {
       _error = e.toString();
       _searchResults = [];
     }
-
     _isLoading = false;
     notifyListeners();
   }
@@ -177,22 +151,7 @@ class MangaProvider extends ChangeNotifier {
   Future<Manga?> fetchMangaDetails(String id) async {
     try {
       final dto = await _api.getMangaDetails(id);
-      final status = _parseStatus(dto.status);
-      return Manga(
-        id: dto.id,
-        title: dto.preferredTitle,
-        author: dto.author ?? '',
-        coverUrl:
-            dto.coverFileName != null
-                ? _api.coverUrl(dto.id, dto.coverFileName!)
-                : null,
-        description: dto.preferredDescription,
-        genres: dto.genres,
-        status: status,
-        currentChapter: dto.lastChapter ?? 0,
-        progress: 0,
-        lastUpdate: dto.updatedAt ?? DateTime.now(),
-      );
+      return _fromDto(dto);
     } catch (e) {
       return null;
     }
@@ -200,16 +159,11 @@ class MangaProvider extends ChangeNotifier {
 
   ReadingStatus _parseStatus(String? status) {
     switch (status) {
-      case 'ongoing':
-        return ReadingStatus.reading;
-      case 'completed':
-        return ReadingStatus.completed;
-      case 'hiatus':
-        return ReadingStatus.onHold;
-      case 'cancelled':
-        return ReadingStatus.dropped;
-      default:
-        return ReadingStatus.planned;
+      case 'ongoing': return ReadingStatus.reading;
+      case 'completed': return ReadingStatus.completed;
+      case 'hiatus': return ReadingStatus.onHold;
+      case 'cancelled': return ReadingStatus.dropped;
+      default: return ReadingStatus.planned;
     }
   }
 

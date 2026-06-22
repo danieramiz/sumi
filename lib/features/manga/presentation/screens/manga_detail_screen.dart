@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:sumi_app/app/theme.dart';
+import 'package:sumi_app/core/utils/date_utils.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
+import 'package:sumi_app/features/manga/presentation/widgets/cover_placeholder.dart';
+import 'package:sumi_app/features/manga/presentation/widgets/floating_circle_button.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/soft_card.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/status_pill.dart';
 import 'package:sumi_app/core/storage/preferences_service.dart';
@@ -102,9 +105,10 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
             SliverAppBar(
               leading: Padding(
                 padding: const EdgeInsets.only(left: 8),
-                child: _roundIconButton(
-                  Icons.arrow_back_rounded,
-                  () => Navigator.of(context).pop(),
+                child: FloatingCircleButton(
+                  size: 40,
+                  icon: Icons.arrow_back_rounded,
+                  onTap: () => Navigator.of(context).pop(),
                 ),
               ),
               actions: [
@@ -136,7 +140,11 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: IgnorePointer(
-                      child: _roundIconButton(Icons.more_horiz_rounded, () {}),
+                      child: FloatingCircleButton(
+                        size: 40,
+                        icon: Icons.more_horiz_rounded,
+                        onTap: () {},
+                      ),
                     ),
                   ),
                 ),
@@ -152,27 +160,6 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
               sliver: _buildRecentChapters(context, manga),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _roundIconButton(IconData icon, VoidCallback onTap) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        shape: BoxShape.circle,
-        boxShadow: AppShadows.subtle,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: Icon(icon, color: AppColors.primaryText, size: 22),
         ),
       ),
     );
@@ -237,14 +224,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     return _coverPlaceholder;
   }
 
-  Widget get _coverPlaceholder {
-    return Container(
-      color: AppColors.accent.withValues(alpha: 0.1),
-      child: const Center(
-        child: Icon(Icons.auto_stories, color: AppColors.accent, size: 36),
-      ),
-    );
-  }
+  Widget get _coverPlaceholder => const CoverPlaceholder(width: 100, height: 140);
 
   Widget _buildDashboard(BuildContext context, Manga manga) {
     return Column(
@@ -265,20 +245,8 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: SoftCard(
-                child: _buildReadingProgress(context, manga),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: SoftCard(
-                child: _buildChaptersRead(context, manga),
-              ),
-            ),
-          ],
+        SoftCard(
+          child: _buildChaptersRead(context, manga),
         ),
         if (manga.currentArc != null) ...[
           const SizedBox(height: 12),
@@ -350,36 +318,6 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
         Text(
           dateStr,
           style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReadingProgress(BuildContext context, Manga manga) {
-    final sinceStr = manga.readingSince != null
-        ? '${manga.readingSince!.year}-${manga.readingSince!.month.toString().padLeft(2, '0')}'
-        : 'Unknown';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _metricLabel('Reading Since'),
-        const SizedBox(height: 6),
-        Text(
-          sinceStr,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '~${manga.totalReadingTime?.inHours ?? 0}h total',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 24,
-          child: CustomPaint(
-            size: const Size(double.infinity, 24),
-            painter: _MiniChartPainter(),
-          ),
         ),
       ],
     );
@@ -501,7 +439,11 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
             char.isFavorite ? Icons.favorite : Icons.favorite_border,
             color: char.isFavorite ? Colors.red : AppColors.secondaryText,
           ),
-          onPressed: () {},
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Favorite toggled (not implemented)')),
+            );
+          },
         ),
       ],
     );
@@ -537,7 +479,11 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
         ),
         const Spacer(),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Edit rating (not implemented)')),
+            );
+          },
           child: const Text(
             'Edit',
             style: TextStyle(
@@ -626,7 +572,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
               itemBuilder: (context, index) {
                 final ch = chapters[index];
                 final dateStr = ch.publishDate != null
-                    ? '${ch.publishDate!.month}/${ch.publishDate!.day}'
+                    ? timeAgo(ch.publishDate!)
                     : null;
                 return SoftCard(
                   borderRadius: 20,
@@ -708,29 +654,4 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
       ),
     );
   }
-}
-
-class _MiniChartPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.accent.withValues(alpha: 0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    final path = Path();
-    final points = [0.3, 0.4, 0.35, 0.6, 0.55, 0.7, 0.65, 0.75];
-
-    path.moveTo(0, size.height * (1 - points[0]));
-    for (int i = 1; i < points.length; i++) {
-      final x = size.width * (i / (points.length - 1));
-      final y = size.height * (1 - points[i]);
-      path.lineTo(x, y);
-    }
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

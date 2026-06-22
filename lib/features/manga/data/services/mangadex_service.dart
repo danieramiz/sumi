@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:sumi_app/core/constants/api_config.dart';
 import 'package:sumi_app/features/manga/data/models/chapter_dto.dart';
 import 'package:sumi_app/features/manga/data/models/chapter_pages_dto.dart';
 import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 
 class MangaDexService {
-  static const _baseUrl = 'https://api.mangadex.org';
+  static const _baseUrl = ApiConfig.mangadexBaseUrl;
   final http.Client _client;
 
   MangaDexService({http.Client? client}) : _client = client ?? http.Client();
@@ -75,7 +76,7 @@ class MangaDexService {
     final uri = Uri.parse('$_baseUrl/manga/$mangaId/feed').replace(
       queryParameters: {
         'limit': limit.toString(),
-        'translatedLanguage[]': 'en',
+        'translatedLanguage[]': ApiConfig.defaultLang,
         'order[chapter]': ascending ? 'asc' : 'desc',
       },
     );
@@ -91,6 +92,7 @@ class MangaDexService {
   Future<ChapterPagesDto> getChapterPages(String chapterId) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/at-home/server/$chapterId'),
+      headers: _headers(),
     );
     if (response.statusCode != 200) {
       throw Exception('MangaDex API error: ${response.statusCode}');
@@ -105,7 +107,7 @@ class MangaDexService {
     String? token,
   }) async {
     final uri = Uri.parse('$_baseUrl/manga/$mangaId/aggregate').replace(
-      queryParameters: {'translatedLanguage[]': 'en'},
+        queryParameters: {'translatedLanguage[]': ApiConfig.defaultLang},
     );
     final response = await _client.get(
       uri,
@@ -183,7 +185,7 @@ class MangaDexService {
   Map<String, String> _headers({String? token}) {
     final headers = <String, String>{
       'Content-Type': 'application/json',
-      'User-Agent': 'SumiApp/1.0',
+      'User-Agent': ApiConfig.userAgent,
     };
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';

@@ -63,25 +63,23 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            if (_loading)
-              const Center(child: CircularProgressIndicator(color: Colors.white))
-            else if (_error != null)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text(_error!, style: const TextStyle(color: Colors.white)),
-                ),
-              )
-            else if (_mode == ReadingMode.paged)
-              _buildPagedView()
-            else
-              _buildScrollView(),
-            _buildOverlay(),
-          ],
-        ),
+      body: Stack(
+        children: [
+          if (_loading)
+            const Center(child: CircularProgressIndicator(color: Colors.white))
+          else if (_error != null)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text(_error!, style: const TextStyle(color: Colors.white)),
+              ),
+            )
+          else if (_mode == ReadingMode.paged)
+            _buildPagedView()
+          else
+            _buildScrollView(),
+          _buildOverlay(),
+        ],
       ),
     );
   }

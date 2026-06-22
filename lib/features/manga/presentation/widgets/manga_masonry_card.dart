@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sumi_app/app/theme.dart';
+import 'package:sumi_app/core/utils/date_utils.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
+import 'package:sumi_app/features/manga/presentation/widgets/cover_placeholder.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/soft_card.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/status_pill.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/progress_bar.dart';
@@ -52,12 +54,11 @@ class MangaMasonryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompact = manga.progress == 1.0 || manga.status == ReadingStatus.planned;
 
-    return GestureDetector(
+    return SoftCard(
+      onTap: onTap,
       onLongPress: onLongPress,
-      child: SoftCard(
-        onTap: onTap,
-        padding: EdgeInsets.zero,
-        child: Column(
+      padding: EdgeInsets.zero,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
@@ -122,7 +123,6 @@ class MangaMasonryCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -137,14 +137,7 @@ class MangaMasonryCard extends StatelessWidget {
     return 'Chapter ${manga.currentChapter.toInt()}';
   }
 
-  String get _timeAgo {
-    final diff = DateTime.now().difference(manga.lastUpdate);
-    if (diff.inDays == 0) return 'Today';
-    if (diff.inDays == 1) return 'Yesterday';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}w ago';
-    return '${(diff.inDays / 30).floor()}mo ago';
-  }
+  String get _timeAgo => timeAgo(manga.lastUpdate);
 
   Widget _buildCoverImage() {
     final coverUrl = manga.coverUrl;
@@ -161,21 +154,5 @@ class MangaMasonryCard extends StatelessWidget {
     return _coverPlaceholder;
   }
 
-  Widget get _coverPlaceholder {
-    return Container(
-      color: AppColors.accent.withValues(alpha: 0.1),
-      alignment: Alignment.center,
-      child: Container(
-        width: 80,
-        height: 110,
-        decoration: BoxDecoration(
-          color: AppColors.accent.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(AppRadius.image),
-        ),
-        child: const Center(
-          child: Icon(Icons.auto_stories, color: AppColors.accent, size: 32),
-        ),
-      ),
-    );
-  }
+  Widget get _coverPlaceholder => const CoverPlaceholder(width: 80, height: 110);
 }
