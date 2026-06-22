@@ -5,12 +5,14 @@ import 'package:sumi_app/features/manga/presentation/widgets/manga_masonry_card.
 class AnimatedMangaCard extends StatefulWidget {
   final Manga manga;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final int index;
 
   const AnimatedMangaCard({
     super.key,
     required this.manga,
     this.onTap,
+    this.onLongPress,
     required this.index,
   });
 
@@ -65,6 +67,7 @@ class _AnimatedMangaCardState extends State<AnimatedMangaCard>
         child: MangaMasonryCard(
           manga: widget.manga,
           onTap: widget.onTap,
+          onLongPress: widget.onLongPress,
         ),
       ),
     );

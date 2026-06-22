@@ -197,10 +197,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMasonryGrid(List<Manga> mangas, BuildContext context) {
     final items = <Widget>[];
     for (int i = 0; i < mangas.length; i++) {
+      final currentManga = mangas[i];
       final card = AnimatedMangaCard(
-        manga: mangas[i],
+        manga: currentManga,
         index: i,
-        onTap: () => _openDetail(context, mangas[i]),
+        onTap: () => _openDetail(context, currentManga),
+        onLongPress: () => _confirmRemove(context, currentManga),
       );
       if (i == 1) {
         items.add(
@@ -253,6 +255,98 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _confirmRemove(BuildContext context, Manga manga) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryText.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Remove from library?',
+                  style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w700,
+                    color: AppColors.primaryText,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  manga.title,
+                  style: const TextStyle(
+                    fontSize: 14, color: AppColors.secondaryText,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: Material(
+                    color: AppColors.dropped,
+                    borderRadius: BorderRadius.circular(24),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        context.read<MangaProvider>().removeFromLibrary(manga.id);
+                      },
+                      child: const Center(
+                        child: Text(
+                          'Remove',
+                          style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () => Navigator.of(ctx).pop(),
+                      child: const Center(
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w500,
+                            color: AppColors.secondaryText,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

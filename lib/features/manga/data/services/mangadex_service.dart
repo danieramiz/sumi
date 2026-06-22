@@ -104,6 +104,22 @@ class MangaDexService {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  Future<bool> followManga(String mangaId, String token) async {
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/manga/$mangaId/follow'),
+      headers: _headers(token: token),
+    );
+    return response.statusCode == 200 || response.statusCode == 204;
+  }
+
+  Future<bool> unfollowManga(String mangaId, String token) async {
+    final response = await _client.delete(
+      Uri.parse('$_baseUrl/manga/$mangaId/follow'),
+      headers: _headers(token: token),
+    );
+    return response.statusCode == 200 || response.statusCode == 204;
+  }
+
   String coverUrl(String mangaId, String fileName, {int size = 512}) {
     return 'https://uploads.mangadex.org/covers/$mangaId/$fileName.$size.jpg';
   }

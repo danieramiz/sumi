@@ -26,8 +26,7 @@ class MangaProvider extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
-  MangaProvider({AuthProvider? authProvider})
-      : _authProvider = authProvider {
+  MangaProvider({AuthProvider? authProvider}) : _authProvider = authProvider {
     _followedManga = mockMangaList;
   }
 
@@ -43,14 +42,22 @@ class MangaProvider extends ChangeNotifier {
     return _followedManga.any((m) => m.id == id);
   }
 
-  void addToLibrary(Manga manga) {
+  Future<void> addToLibrary(Manga manga) async {
+    final token = _authProvider?.accessToken;
     _followedManga.insert(0, manga);
     notifyListeners();
+    if (token != null) {
+      await _api.followManga(manga.id, token);
+    }
   }
 
-  void removeFromLibrary(String id) {
+  Future<void> removeFromLibrary(String id) async {
+    final token = _authProvider?.accessToken;
     _followedManga.removeWhere((m) => m.id == id);
     notifyListeners();
+    if (token != null) {
+      await _api.unfollowManga(id, token);
+    }
   }
 
   Future<List<Chapter>> fetchChapters(String mangaId) async {
