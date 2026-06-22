@@ -58,7 +58,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   Future<void> _loadChapters() async {
     if (_manga == null) return;
     final provider = context.read<MangaProvider>();
-    final chapters = await provider.fetchChapters(_manga!.id);
+    final chapters = await provider.fetchChapters(_manga!.id, ascending: _chaptersAscending);
     if (mounted) {
       setState(() => _chapters = chapters);
     }
