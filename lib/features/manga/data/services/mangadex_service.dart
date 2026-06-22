@@ -70,12 +70,12 @@ class MangaDexService {
     );
   }
 
-  Future<List<ChapterDto>> getChapters(String mangaId, {int limit = 20}) async {
+  Future<List<ChapterDto>> getChapters(String mangaId, {int limit = 20, bool ascending = false}) async {
     final uri = Uri.parse('$_baseUrl/manga/$mangaId/feed').replace(
       queryParameters: {
         'limit': limit.toString(),
         'translatedLanguage[]': 'en',
-        'order[chapter]': 'desc',
+        'order[chapter]': ascending ? 'asc' : 'desc',
       },
     );
     final response = await _client.get(uri, headers: _headers());

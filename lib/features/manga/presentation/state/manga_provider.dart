@@ -61,9 +61,9 @@ class MangaProvider extends ChangeNotifier {
     }
   }
 
-  Future<List<Chapter>> fetchChapters(String mangaId) async {
+  Future<List<Chapter>> fetchChapters(String mangaId, {bool ascending = false}) async {
     try {
-      final dtos = await _api.getChapters(mangaId, limit: 10);
+      final dtos = await _api.getChapters(mangaId, limit: 20, ascending: ascending);
       return dtos.map((d) {
         return Chapter(
           id: d.id,

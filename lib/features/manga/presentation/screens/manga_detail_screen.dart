@@ -21,6 +21,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   Manga? _manga;
   bool _loading = true;
   List<Chapter> _chapters = [];
+  bool _chaptersAscending = false;
 
 
   @override
@@ -544,6 +545,19 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     );
   }
 
+  Future<void> _toggleChapterSort() async {
+    if (_manga == null) return;
+    final newOrder = !_chaptersAscending;
+    final provider = context.read<MangaProvider>();
+    final chapters = await provider.fetchChapters(_manga!.id, ascending: newOrder);
+    if (mounted) {
+      setState(() {
+        _chaptersAscending = newOrder;
+        _chapters = chapters;
+      });
+    }
+  }
+
   Widget _buildRecentChapters(BuildContext context, Manga manga) {
     final chapters = _chapters;
 
@@ -553,9 +567,45 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Text(
-              'Recent Chapters',
-              style: Theme.of(context).textTheme.titleLarge,
+            child: Row(
+              children: [
+                Text(
+                  'Recent Chapters',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: _toggleChapterSort,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _chaptersAscending
+                              ? Icons.arrow_upward_rounded
+                              : Icons.arrow_downward_rounded,
+                          size: 14,
+                          color: AppColors.accent,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _chaptersAscending ? 'Oldest' : 'Newest',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           SizedBox(
