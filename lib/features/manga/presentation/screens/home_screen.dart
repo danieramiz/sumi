@@ -5,7 +5,7 @@ import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_provider.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
-import 'package:sumi_app/features/manga/presentation/widgets/manga_masonry_card.dart';
+import 'package:sumi_app/features/manga/presentation/widgets/animated_manga_card.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/floating_circle_button.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
 import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen.dart';
@@ -233,8 +233,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMasonryGrid(List<Manga> mangas, BuildContext context) {
     final items = <Widget>[];
     for (int i = 0; i < mangas.length; i++) {
-      final card = MangaMasonryCard(
+      final card = AnimatedMangaCard(
         manga: mangas[i],
+        index: i,
         onTap: () => _openDetail(context, mangas[i]),
       );
       if (i == 1) {

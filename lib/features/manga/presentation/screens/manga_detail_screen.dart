@@ -531,9 +531,11 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
             ),
           ),
           SizedBox(
-            height: 90,
+            height: 120,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               itemCount: chapters.length,
               separatorBuilder: (_, __) => const SizedBox(width: 10),
               itemBuilder: (context, index) {
