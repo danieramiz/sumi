@@ -6,7 +6,7 @@ final List<Manga> mockMangaList = [
     id: '1',
     title: 'One Piece',
     author: 'Eiichiro Oda',
-    coverUrl: 'https://cdn.mangadex.org/covers/...',
+    coverUrl: null,
     description: 'Follow Monkey D. Luffy as he sails the Grand Line.',
     genres: ['Shounen', 'Adventure', 'Fantasy'],
     status: ReadingStatus.reading,

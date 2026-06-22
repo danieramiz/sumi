@@ -50,7 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            CustomScrollView(
+            RefreshIndicator(
+              onRefresh: () => _onRefresh(context),
+              displacement: 40,
+              color: AppColors.accent,
+              child: CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(child: _buildHeader(context, auth)),
                 if (mangaProvider.isLibraryLoading)
@@ -75,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
               ],
+            ),
             ),
             if (mangas.isNotEmpty) _buildFloatingButtons(context),
             if (mangas.isEmpty)
@@ -219,6 +224,14 @@ class _HomeScreenState extends State<HomeScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
     );
+  }
+
+  Future<void> _onRefresh(BuildContext context) async {
+    final auth = context.read<AuthProvider>();
+    final mangaProvider = context.read<MangaProvider>();
+    if (auth.isAuthenticated) {
+      await mangaProvider.fetchLibrary();
+    }
   }
 
   void _openDetail(BuildContext context, Manga manga) {
