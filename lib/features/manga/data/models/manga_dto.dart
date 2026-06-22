@@ -7,6 +7,7 @@ class MangaDto {
   final List<String> genres;
   final String? coverFileName;
   final String? author;
+  final DateTime? updatedAt;
 
   MangaDto({
     required this.id,
@@ -17,6 +18,7 @@ class MangaDto {
     required this.genres,
     this.coverFileName,
     this.author,
+    this.updatedAt,
   });
 
   String get preferredTitle {
@@ -54,6 +56,11 @@ class MangaDto {
     if (lc != null) {
       lastChapter = double.tryParse(lc);
     }
+    DateTime? updatedAt;
+    final ua = attributes['updatedAt'] as String?;
+    if (ua != null) {
+      updatedAt = DateTime.tryParse(ua);
+    }
 
     return MangaDto(
       id: json['id'] as String,
@@ -72,6 +79,7 @@ class MangaDto {
           .toList(),
       coverFileName: coverFileName,
       author: author,
+      updatedAt: updatedAt,
     );
   }
 }

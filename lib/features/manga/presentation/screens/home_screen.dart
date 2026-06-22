@@ -191,43 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader(BuildContext context, AuthProvider auth) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
-      child: Row(
-        children: [
-          Text(
-            'Library',
-            style: Theme.of(context).textTheme.headlineLarge,
-          ),
-          const Spacer(),
-          if (auth.isAuthenticated)
-            GestureDetector(
-              onTap: () {
-                auth.logout();
-                setState(() {
-                  _showWelcome = true;
-                  _libraryFetched = false;
-                });
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(8),
-                child: Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.secondaryText,
-                  ),
-                ),
-              ),
-            ),
-          FloatingCircleButton(
-            icon: Icons.more_horiz_rounded,
-            size: 40,
-            onTap: () {},
-          ),
-        ],
-      ),
-    );
+    return const SizedBox(height: 16);
   }
 
   Widget _buildMasonryGrid(List<Manga> mangas, BuildContext context) {
@@ -280,12 +244,99 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ),
-        const Positioned(
+        Positioned(
           right: 20,
           bottom: 24,
-          child: FloatingCircleButton(icon: Icons.tune_rounded),
+          child: FloatingCircleButton(
+            icon: Icons.menu_rounded,
+            onTap: () => _showMenu(context),
+          ),
         ),
       ],
+    );
+  }
+
+  void _showMenu(BuildContext context) {
+    final auth = context.read<AuthProvider>();
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryText.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Sumi',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.accent,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                if (auth.isAuthenticated)
+                  _menuItem(
+                    ctx,
+                    Icons.logout_rounded,
+                    'Logout',
+                    () {
+                      Navigator.of(ctx).pop();
+                      auth.logout();
+                      setState(() {
+                        _showWelcome = true;
+                        _libraryFetched = false;
+                      });
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _menuItem(
+      BuildContext context, IconData icon, String label, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.primaryText, size: 22),
+              const SizedBox(width: 14),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: AppColors.primaryText,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

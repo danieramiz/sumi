@@ -96,7 +96,7 @@ class MangaProvider extends ChangeNotifier {
           status: status,
           currentChapter: dto.lastChapter ?? 0,
           progress: 0,
-          lastUpdate: DateTime.now(),
+          lastUpdate: dto.updatedAt ?? DateTime.now(),
         );
       }).toList();
       if (_followedManga.isEmpty) {
@@ -133,7 +133,7 @@ class MangaProvider extends ChangeNotifier {
           status: status,
           currentChapter: dto.lastChapter ?? 0,
           progress: 0,
-          lastUpdate: DateTime.now(),
+          lastUpdate: dto.updatedAt ?? DateTime.now(),
         );
       }).toList();
     } catch (e) {
@@ -162,7 +162,7 @@ class MangaProvider extends ChangeNotifier {
         status: status,
         currentChapter: dto.lastChapter ?? 0,
         progress: 0,
-        lastUpdate: DateTime.now(),
+        lastUpdate: dto.updatedAt ?? DateTime.now(),
       );
     } catch (e) {
       return null;
