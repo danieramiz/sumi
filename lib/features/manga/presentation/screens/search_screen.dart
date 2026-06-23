@@ -6,6 +6,7 @@ import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
 import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/cover_placeholder.dart';
+import 'package:sumi_app/core/routes/hero_detail_route.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -146,9 +147,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         inLibrary: provider.isInLibrary(manga.id),
                         onTap: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  MangaDetailScreen(mangaId: manga.id),
+                            HeroDetailRoute(
+                              page: MangaDetailScreen(mangaId: manga.id),
                             ),
                           );
                         },

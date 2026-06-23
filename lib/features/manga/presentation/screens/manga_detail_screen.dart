@@ -15,7 +15,7 @@ class MangaDetailScreen extends StatefulWidget {
   State<MangaDetailScreen> createState() => _MangaDetailScreenState();
 }
 
-class _MangaDetailScreenState extends State<MangaDetailScreen> {
+class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTickerProviderStateMixin {
   Manga? _manga;
   bool _loading = true;
   List<Chapter> _chapters = [];
@@ -26,17 +26,35 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   bool _isLoadingMore = false;
   bool _hasMoreChapters = true;
   final _chapterScrollController = ScrollController();
+  final _detailScrollController = ScrollController();
+  late final AnimationController _staggerController;
+  double _scrollOffset = 0;
 
   @override
   void initState() {
     super.initState();
     _chapterScrollController.addListener(_onChapterScroll);
+    _detailScrollController.addListener(() {
+      setState(() => _scrollOffset = _detailScrollController.offset);
+    });
+    _staggerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    final provider = context.read<MangaProvider>();
+    final cached = provider.getMangaById(widget.mangaId);
+    if (cached != null) {
+      _chaptersAscending = PreferencesService.instance.chaptersAscending;
+      _manga = cached;
+    }
     _loadManga();
   }
 
   @override
   void dispose() {
     _chapterScrollController.dispose();
+    _detailScrollController.dispose();
+    _staggerController.dispose();
     super.dispose();
   }
 
@@ -71,6 +89,9 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
         _markTarget = _readCountFromChapters(chapters, manga!.currentChapter.toInt());
         _loading = false;
       });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _staggerController.forward();
+      });
     } else if (mounted) setState(() => _loading = false);
   }
 
@@ -89,6 +110,32 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   String _fmtChapterNum(double n) {
     final r = n.roundToDouble();
     return n == r ? r.toInt().toString() : n.toString();
+  }
+
+  Widget _staggerSlide(int index, Widget child) {
+    final double start = index * 0.08;
+    return SliverToBoxAdapter(
+      child: AnimatedBuilder(
+        animation: _staggerController,
+        builder: (context, _) {
+          final progress = _staggerController.value;
+          final t = ((progress - start) / 0.5).clamp(0.0, 1.0);
+          final eased = Curves.easeOut.transform(t);
+          return Opacity(
+            opacity: eased,
+            child: Transform.translate(
+              offset: Offset(0, 16 * (1 - eased)),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _popWithAnimation() async {
+    await _staggerController.reverse();
+    if (mounted) Navigator.of(context).pop();
   }
 
   Future<void> _loadMoreChapters() async {
@@ -129,33 +176,38 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
-      body: const Center(child: CircularProgressIndicator(color: Color(0xFF8B7EF6))),
-    );
     final manga = _manga;
-    if (manga == null) return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
-      body: const Center(child: Text('Manga not found', style: TextStyle(color: Colors.white54))),
-    );
     return Scaffold(
       backgroundColor: const Color(0xFF0D1117),
       body: CustomScrollView(
+        controller: _detailScrollController,
         slivers: [
           _buildHero(manga),
-          _buildPrimaryStats(manga),
-          _buildReadingJourney(manga),
-          _buildChapterTimeline(manga),
-          _buildAbout(manga),
-          _buildInfo(manga),
-          const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
+          if (manga == null)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: _loading
+                    ? const CircularProgressIndicator(color: Color(0xFF8B7EF6))
+                    : const Text('Manga not found', style: TextStyle(color: Colors.white54)),
+              ),
+            )
+          else ...[
+            _staggerSlide(0, _primaryStatsPanel(manga)),
+            _staggerSlide(1, _readingJourneyPanel(manga)),
+            _staggerSlide(2, _chapterTimelinePanel(manga)),
+            _staggerSlide(3, _aboutPanel(manga)),
+            _staggerSlide(4, _infoPanel(manga)),
+            const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildHero(Manga manga) {
+  Widget _buildHero(Manga? manga) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final coverUrl = manga?.coverUrl;
     return SliverAppBar(
       expandedHeight: screenHeight * 0.40,
       pinned: false,
@@ -165,15 +217,23 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            if (manga.coverUrl != null)
-              CachedNetworkImage(
-                imageUrl: manga.coverUrl!,
-                fit: BoxFit.cover,
-                errorWidget: (_, __, ___) => _heroPlaceholder,
-                placeholder: (_, __) => _heroPlaceholder,
-              )
-            else
-              _heroPlaceholder,
+            Transform.translate(
+              offset: Offset(0, _scrollOffset * 0.3),
+              child: Hero(
+                tag: 'manga_cover_${widget.mangaId}',
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: coverUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: coverUrl,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => _heroPlaceholder,
+                          placeholder: (_, __) => _heroPlaceholder,
+                        )
+                      : _heroPlaceholder,
+                ),
+              ),
+            ),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -191,13 +251,13 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
             ),
             Positioned(
               left: 12, top: MediaQuery.of(context).padding.top + 4,
-              child: _circleBtn(Icons.arrow_back_rounded, () => Navigator.of(context).pop()),
+              child: _circleBtn(Icons.arrow_back_rounded, _popWithAnimation),
             ),
             Positioned(
               right: 12, top: MediaQuery.of(context).padding.top + 4,
               child: _circleBtn(Icons.more_horiz_rounded, _showMenu),
             ),
-            Positioned(
+            if (manga != null) Positioned(
               left: 20, right: 20, bottom: 20,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,7 +283,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     );
   }
 
-  Widget _buildPrimaryStats(Manga manga) {
+  Widget _primaryStatsPanel(Manga manga) {
     final latestCh = _chapters.isNotEmpty ? _chapters.first : null;
     final latestNum = latestCh?.chapterNumber ?? manga.currentChapter;
     final total = _totalChapters > 0 ? _totalChapters : null;
@@ -232,43 +292,38 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
         ? ((currentRead / total) * 100).round()
         : (manga.progress * 100).round();
     final statusLabel = _statusLabel(manga);
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-        child: Row(
-          children: [
-            Expanded(child: _statCard('Progress', '${pct}%',
-                '$currentRead / ${total ?? '?'} chapters', Icons.pie_chart_rounded)),
-            const SizedBox(width: 10),
-            Expanded(child: _statCard('Latest', 'Ch. ${latestNum.toInt()}',
-                latestCh?.publishDate != null ? timeAgo(latestCh!.publishDate!) : 'No data',
-                Icons.auto_stories_rounded)),
-            const SizedBox(width: 10),
-            Expanded(child: _statCard('Status', statusLabel,
-                manga.readingSince != null ? 'Started ${_formatDate(manga.readingSince!)}' : '—',
-                Icons.circle_outlined)),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      child: Row(
+        children: [
+          Expanded(child: _statCard('Progress', '${pct}%',
+              '$currentRead / ${total ?? '?'} chapters', Icons.pie_chart_rounded)),
+          const SizedBox(width: 10),
+          Expanded(child: _statCard('Latest', 'Ch. ${latestNum.toInt()}',
+              latestCh?.publishDate != null ? timeAgo(latestCh!.publishDate!) : 'No data',
+              Icons.auto_stories_rounded)),
+          const SizedBox(width: 10),
+          Expanded(child: _statCard('Status', statusLabel,
+              manga.readingSince != null ? 'Started ${_formatDate(manga.readingSince!)}' : '—',
+              Icons.circle_outlined)),
+        ],
       ),
     );
   }
 
-  Widget _buildReadingJourney(Manga manga) {
+  Widget _readingJourneyPanel(Manga manga) {
     final effectiveRead = _markTarget > 0 ? _markTarget : manga.currentChapter.toInt();
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-        child: _journeyCard(manga, effectiveRead),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: _journeyCard(manga, effectiveRead),
     );
   }
 
-  Widget _buildChapterTimeline(Manga manga) {
+  Widget _chapterTimelinePanel(Manga manga) {
     final chapters = _chapters;
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-        child: Column(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -329,19 +384,17 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 
-  Widget _buildAbout(Manga manga) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('About', style: TextStyle(
-              fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
+  Widget _aboutPanel(Manga manga) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('About', style: TextStyle(
+            fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -359,42 +412,42 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 
-  Widget _buildInfo(Manga manga) {
+  Widget _infoPanel(Manga manga) {
     final altTitles = <String>[];
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Information', style: TextStyle(
-              fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF151B23),
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 16, offset: const Offset(0, 4))],
-              ),
-              child: Column(
-                children: [
-                  _infoRow('Author', manga.author.isNotEmpty ? manga.author : '—'),
-                  _infoDivider(),
-                  _infoRow('Status', manga.status.name.replaceAll('_', ' ').toUpperCase()),
-                  _infoDivider(),
-                  _infoRow('Genres', manga.genres.isNotEmpty ? manga.genres.join(', ') : '—'),
-                  if (altTitles.isNotEmpty) ...[_infoDivider(), _infoRow('Also known as', altTitles.join(', '))],
-                ],
-              ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Information', style: TextStyle(
+            fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF151B23),
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 16, offset: const Offset(0, 4))],
             ),
-          ],
-        ),
+            child: Column(
+              children: [
+                _infoRow('Author', manga.author.isNotEmpty ? manga.author : 'Unknown'),
+                _infoDivider(),
+                _infoRow('Status', manga.status.toString().split('.').last),
+                _infoDivider(),
+                _infoRow('Chapters', _totalChapters > 0 ? '$_totalChapters' : '—'),
+                if (altTitles.isNotEmpty) ...[
+                  _infoDivider(),
+                  _infoRow('Also Known As', altTitles.join(', ')),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
