@@ -86,6 +86,11 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     return max > 0 ? max : fallback;
   }
 
+  String _fmtChapterNum(double n) {
+    final r = n.roundToDouble();
+    return n == r ? r.toInt().toString() : n.toString();
+  }
+
   Future<void> _loadMoreChapters() async {
     if (_isLoadingMore || _manga == null) return;
     _isLoadingMore = true;
@@ -436,7 +441,9 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                ch.chapterNumber > 0 ? 'Chapter ${ch.chapterNumber.toInt()}' : 'Chapter ?',
+                ch.chapterNumber > 0
+                    ? 'Chapter ${_fmtChapterNum(ch.chapterNumber)}'
+                    : 'Chapter ?',
                 style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
               ),
             ),
