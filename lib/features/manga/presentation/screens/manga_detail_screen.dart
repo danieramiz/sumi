@@ -19,7 +19,9 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   Manga? _manga;
   bool _loading = true;
   List<Chapter> _chapters = [];
+  final _seenNums = <int>{};
   int _totalChapters = 0;
+  int _markTarget = 0;
   bool _chaptersAscending = false;
   bool _isLoadingMore = false;
   bool _hasMoreChapters = true;
@@ -58,13 +60,30 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
       final chapters = await provider.fetchChapters(manga.id,
           ascending: _chaptersAscending, limit: 20);
       final totalCh = await provider.fetchTotalChapters(manga.id);
+      _seenNums.clear();
+      for (final c in chapters) {
+        _seenNums.add(c.chapterNumber.round());
+      }
       if (mounted) setState(() {
         _manga = manga;
         _chapters = chapters;
         _totalChapters = totalCh;
+        _markTarget = _readCountFromChapters(chapters, manga!.currentChapter.toInt());
         _loading = false;
       });
     } else if (mounted) setState(() => _loading = false);
+  }
+
+  int _readCountFromChapters(List<Chapter> chapters, int fallback) {
+    final seen = <int>{};
+    var max = 0;
+    for (final c in chapters) {
+      final n = c.chapterNumber.round();
+      if (c.isRead && n > 0 && seen.add(n) && n > max) {
+        max = n;
+      }
+    }
+    return max > 0 ? max : fallback;
   }
 
   Future<void> _loadMoreChapters() async {
@@ -75,11 +94,12 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     final more = await provider.fetchChapters(_manga!.id,
         ascending: _chaptersAscending, offset: _chapters.length, limit: 20);
     if (mounted) {
+      final deduped = more.where((c) => _seenNums.add(c.chapterNumber.round())).toList();
       setState(() {
-        if (more.isEmpty) {
+        if (deduped.isEmpty) {
           _hasMoreChapters = false;
         } else {
-          _chapters.addAll(more);
+          _chapters.addAll(deduped);
         }
         _isLoadingMore = false;
       });
@@ -92,6 +112,10 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     _hasMoreChapters = true;
     final chapters = await provider.fetchChapters(_manga!.id,
         ascending: _chaptersAscending, limit: 20);
+    _seenNums.clear();
+    for (final c in chapters) {
+      _seenNums.add(c.chapterNumber.round());
+    }
     if (mounted) setState(() {
       _chapters = chapters;
       _isLoadingMore = false;
@@ -197,10 +221,8 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   Widget _buildPrimaryStats(Manga manga) {
     final latestCh = _chapters.isNotEmpty ? _chapters.first : null;
     final latestNum = latestCh?.chapterNumber ?? manga.currentChapter;
-    final maxChNum = _chapters.fold<double>(0, (max, ch) => ch.chapterNumber > max ? ch.chapterNumber : max);
-    final total = maxChNum > 0 ? maxChNum.round() : (_totalChapters > 0 ? _totalChapters : null);
-    final readCount = _chapters.where((c) => c.isRead).length;
-    final currentRead = readCount > 0 ? readCount : manga.currentChapter.toInt();
+    final total = _totalChapters > 0 ? _totalChapters : null;
+    final currentRead = _markTarget > 0 ? _markTarget : manga.currentChapter.toInt();
     final pct = total != null && total > 0
         ? ((currentRead / total) * 100).round()
         : (manga.progress * 100).round();
@@ -227,8 +249,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   }
 
   Widget _buildReadingJourney(Manga manga) {
-    final readCount = _chapters.where((c) => c.isRead).length;
-    final effectiveRead = readCount > 0 ? readCount : manga.currentChapter.toInt();
+    final effectiveRead = _markTarget > 0 ? _markTarget : manga.currentChapter.toInt();
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -384,7 +405,10 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
               onClose: () {
                 if (_manga != null) {
                   context.read<MangaProvider>().markChapterRead(_manga!.id, ch.id)
-                      .then((_) => _loadChapters());
+                      .then((_) {
+                    _markTarget = ch.chapterNumber.toInt();
+                    _loadChapters();
+                  });
                 }
               },
             ),
@@ -580,11 +604,17 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
                     for (int i = idx + 1; i < _chapters.length; i++) {
                       if (!_chapters[i].isRead) ids.add(_chapters[i].id);
                     }
-                    provider.markChaptersRead(_manga!.id, ids).then((_) => _loadChapters());
+                    provider.markChaptersRead(_manga!.id, ids).then((_) {
+                      _markTarget = ch.chapterNumber.toInt();
+                      _loadChapters();
+                    });
                   }),
                 _darkMenuItem(ctx, Icons.check_rounded, 'Mark as read', const Color(0xFF8B7EF6), () {
                   Navigator.of(ctx).pop();
-                  provider.markChapterRead(_manga!.id, ch.id).then((_) => _loadChapters());
+                  provider.markChapterRead(_manga!.id, ch.id).then((_) {
+                    _markTarget = ch.chapterNumber.toInt();
+                    _loadChapters();
+                  });
                 }),
               ],
             ),

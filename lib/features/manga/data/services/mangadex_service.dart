@@ -131,6 +131,10 @@ class MangaDexService {
       final chs = volMap['chapters'] as Map<String, dynamic>? ?? {};
       chapters.addAll(chs.keys);
     }
+    chapters.removeWhere((k) {
+      final n = double.tryParse(k);
+      return n == null || n <= 0;
+    });
     return chapters.length;
   }
 
