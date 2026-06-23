@@ -12,7 +12,22 @@ class MangaProvider extends ChangeNotifier {
   AuthProvider? _authProvider;
 
   List<Manga> _followedManga = mockMangaList;
-  List<Manga> get followedManga => _followedManga;
+  List<Manga> get followedManga => _sortedList;
+
+  List<Manga> get _sortedList {
+    final prefs = PreferencesService.instance;
+    final pinned = prefs.pinnedMangaIds;
+    final sorted = List<Manga>.from(_followedManga);
+    if (prefs.sortOrder == SortOrder.title) {
+      sorted.sort((a, b) => a.title.compareTo(b.title));
+    }
+    sorted.sort((a, b) {
+      final aPinned = pinned.contains(a.id) ? 0 : 1;
+      final bPinned = pinned.contains(b.id) ? 0 : 1;
+      return aPinned.compareTo(bPinned);
+    });
+    return sorted;
+  }
 
   List<Manga> _searchResults = [];
   List<Manga> get searchResults => _searchResults;
@@ -59,6 +74,21 @@ class MangaProvider extends ChangeNotifier {
 
   bool isInLibrary(String id) {
     return _followedManga.any((m) => m.id == id);
+  }
+
+  bool isPinned(String id) {
+    return PreferencesService.instance.pinnedMangaIds.contains(id);
+  }
+
+  Future<void> togglePin(String id) async {
+    final prefs = PreferencesService.instance;
+    if (prefs.pinnedMangaIds.contains(id)) {
+      prefs.pinnedMangaIds.remove(id);
+    } else {
+      prefs.pinnedMangaIds.add(id);
+    }
+    await prefs.save();
+    notifyListeners();
   }
 
   Future<void> addToLibrary(Manga manga) async {

@@ -12,6 +12,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late String _language;
   late bool _scrollMode;
+  SortOrder _sortOrder = SortOrder.lastUpdated;
 
   static const _languages = [
     {'code': 'en', 'label': 'English'},
@@ -37,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
@@ -158,6 +160,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 32),
+                    const Text(
+                      'SORT',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.secondaryText,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: AppShadows.subtle,
+                      ),
+                      child: Column(
+                        children: [
+                          _sortTile(
+                            SortOrder.lastUpdated,
+                            Icons.update_rounded,
+                            'Last Updated',
+                          ),
+                          _sortTile(
+                            SortOrder.title,
+                            Icons.sort_by_alpha_rounded,
+                            'Title A-Z',
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -183,6 +217,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           child: Row(
             children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: AppColors.primaryText,
+                  ),
+                ),
+              ),
+              if (selected)
+                const Icon(Icons.check_rounded,
+                    color: AppColors.accent, size: 22),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sortTile(SortOrder order, IconData icon, String label) {
+    final selected = _sortOrder == order;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () async {
+          setState(() => _sortOrder = order);
+          final prefs = PreferencesService.instance;
+          prefs.sortOrder = order;
+          await prefs.save();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.secondaryText, size: 20),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   label,

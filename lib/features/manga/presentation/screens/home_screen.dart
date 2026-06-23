@@ -203,10 +203,38 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMasonryGrid(List<Manga> mangas, BuildContext context) {
     final items = <Widget>[];
     for (int i = 0; i < mangas.length; i++) {
-      final card = AnimatedMangaCard(
-        manga: mangas[i],
-        index: i,
-        onTap: () => _openDetail(context, mangas[i]),
+      final currentManga = mangas[i];
+      final provider = context.read<MangaProvider>();
+      final isPinned = provider.isPinned(currentManga.id);
+      final card = GestureDetector(
+        onLongPress: () => _showCardMenu(context, currentManga),
+        child: Stack(
+          children: [
+            AnimatedMangaCard(
+              manga: currentManga,
+              index: i,
+              onTap: () => _openDetail(context, currentManga),
+            ),
+            if (isPinned)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.push_pin_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ),
+          ],
+        ),
       );
       if (i == 1) {
         items.add(
@@ -363,6 +391,75 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showCardMenu(BuildContext context, Manga manga) {
+    final provider = context.read<MangaProvider>();
+    final pinned = provider.isPinned(manga.id);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryText.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  manga.title,
+                  style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w700,
+                    color: AppColors.primaryText,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      provider.togglePin(manga.id);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            pinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
+                            color: AppColors.accent, size: 22,
+                          ),
+                          const SizedBox(width: 14),
+                          Text(
+                            pinned ? 'Unpin from top' : 'Pin to top',
+                            style: const TextStyle(
+                                fontSize: 15, color: AppColors.primaryText),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

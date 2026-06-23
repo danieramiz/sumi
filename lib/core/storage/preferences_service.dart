@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
+enum SortOrder { lastUpdated, title }
+
 class PreferencesService {
   static final PreferencesService _instance = PreferencesService._();
   static PreferencesService get instance => _instance;
@@ -12,6 +14,8 @@ class PreferencesService {
   bool chaptersAscending = false;
   bool readerScrollMode = false;
   String language = 'en';
+  SortOrder sortOrder = SortOrder.lastUpdated;
+  Set<String> pinnedMangaIds = {};
 
   Future<void> load() async {
     try {
@@ -23,6 +27,11 @@ class PreferencesService {
       chaptersAscending = data['chaptersAscending'] as bool? ?? false;
       readerScrollMode = data['readerScrollMode'] as bool? ?? false;
       language = data['language'] as String? ?? 'en';
+      sortOrder =
+          SortOrder.values.firstWhere((s) => s.name == data['sortOrder'],
+              orElse: () => SortOrder.lastUpdated);
+      final pinnedList = data['pinnedMangaIds'] as List<dynamic>? ?? [];
+      pinnedMangaIds = pinnedList.map((e) => e.toString()).toSet();
     } catch (_) {}
   }
 
@@ -34,6 +43,8 @@ class PreferencesService {
         'chaptersAscending': chaptersAscending,
         'readerScrollMode': readerScrollMode,
         'language': language,
+        'sortOrder': sortOrder.name,
+        'pinnedMangaIds': pinnedMangaIds.toList(),
       }));
     } catch (_) {}
   }
