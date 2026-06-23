@@ -21,11 +21,30 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
   List<Chapter> _chapters = [];
   int _totalChapters = 0;
   bool _chaptersAscending = false;
+  bool _isLoadingMore = false;
+  bool _hasMoreChapters = true;
+  final _chapterScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _chapterScrollController.addListener(_onChapterScroll);
     _loadManga();
+  }
+
+  @override
+  void dispose() {
+    _chapterScrollController.dispose();
+    super.dispose();
+  }
+
+  void _onChapterScroll() {
+    if (_chapterScrollController.position.pixels >=
+            _chapterScrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMoreChapters) {
+      _loadMoreChapters();
+    }
   }
 
   Future<void> _loadManga() async {
@@ -36,7 +55,8 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     }
     if (manga != null) {
       _chaptersAscending = PreferencesService.instance.chaptersAscending;
-      final chapters = await provider.fetchChapters(manga.id, ascending: _chaptersAscending);
+      final chapters = await provider.fetchChapters(manga.id,
+          ascending: _chaptersAscending, limit: 20);
       final totalCh = await provider.fetchTotalChapters(manga.id);
       if (mounted) setState(() {
         _manga = manga;
@@ -47,11 +67,35 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
     } else if (mounted) setState(() => _loading = false);
   }
 
+  Future<void> _loadMoreChapters() async {
+    if (_isLoadingMore || _manga == null) return;
+    _isLoadingMore = true;
+    if (mounted) setState(() {});
+    final provider = context.read<MangaProvider>();
+    final more = await provider.fetchChapters(_manga!.id,
+        ascending: _chaptersAscending, offset: _chapters.length, limit: 20);
+    if (mounted) {
+      setState(() {
+        if (more.isEmpty) {
+          _hasMoreChapters = false;
+        } else {
+          _chapters.addAll(more);
+        }
+        _isLoadingMore = false;
+      });
+    }
+  }
+
   Future<void> _loadChapters() async {
     if (_manga == null) return;
     final provider = context.read<MangaProvider>();
-    final chapters = await provider.fetchChapters(_manga!.id, ascending: _chaptersAscending);
-    if (mounted) setState(() => _chapters = chapters);
+    _hasMoreChapters = true;
+    final chapters = await provider.fetchChapters(_manga!.id,
+        ascending: _chaptersAscending, limit: 20);
+    if (mounted) setState(() {
+      _chapters = chapters;
+      _isLoadingMore = false;
+    });
   }
 
   @override
@@ -233,12 +277,30 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            if (chapters.isEmpty)
-              const Padding(padding: EdgeInsets.all(20), child: Center(
-                child: Text('No chapters available', style: TextStyle(color: Colors.white38)),
-              ))
-            else
-              ...chapters.take(20).map((ch) => _chapterTile(ch)),
+          if (chapters.isEmpty)
+            const Padding(padding: EdgeInsets.all(20), child: Center(
+              child: Text('No chapters available', style: TextStyle(color: Colors.white38)),
+            ))
+          else
+            SizedBox(
+              height: (chapters.length * 52.0).clamp(0, 800),
+              child: ListView.separated(
+                controller: _chapterScrollController,
+                physics: const ClampingScrollPhysics(),
+                padding: EdgeInsets.zero,
+                itemCount: chapters.length + (_hasMoreChapters ? 1 : 0),
+                separatorBuilder: (_, __) => const SizedBox(height: 4),
+                itemBuilder: (context, index) {
+                  if (index >= chapters.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF8B7EF6))),
+                    );
+                  }
+                  return _chapterTile(chapters[index]);
+                },
+              ),
+            ),
           ],
         ),
       ),

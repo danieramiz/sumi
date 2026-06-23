@@ -124,11 +124,12 @@ class MangaProvider extends ChangeNotifier {
     }
   }
 
-  Future<List<Chapter>> fetchChapters(String mangaId, {bool ascending = false}) async {
+  Future<List<Chapter>> fetchChapters(String mangaId,
+      {bool ascending = false, int offset = 0, int limit = 20}) async {
     try {
       final lang = PreferencesService.instance.language;
       final dtos = await _api.getChapters(mangaId,
-          limit: 20, ascending: ascending, language: lang);
+          limit: limit, offset: offset, ascending: ascending, language: lang);
       Set<String> readIds = {};
       final token = _authProvider?.accessToken;
       if (token != null) {
