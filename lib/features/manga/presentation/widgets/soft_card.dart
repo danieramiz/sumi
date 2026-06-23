@@ -28,6 +28,13 @@ class SoftCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: AppShadows.card,
       ),
+      foregroundDecoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.06),
+          width: 1,
+        ),
+      ),
       child: child,
     );
 

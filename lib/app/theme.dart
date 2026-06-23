@@ -8,7 +8,7 @@ class AppColors {
   static const secondaryText = Color(0xFF8A8A8A);
   static const accent = Color(0xFF8B7EF6);
   static const accentLight = Color(0xFFE8E5FF);
-  static const shadow = Color(0x1A000000);
+  static const shadow = Color(0x26000000);
   static const reading = Color(0xFF4CAF50);
   static const onHold = Color(0xFFFFA726);
   static const completed = Color(0xFF42A5F5);

@@ -58,6 +58,7 @@ class MangaMasonryCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppRadius.card),
         child: SizedBox(
+          height: 220,
           child: _buildCoverImage(),
         ),
       ),
