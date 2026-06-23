@@ -91,6 +91,10 @@ class MangaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void refreshSort() {
+    notifyListeners();
+  }
+
   Future<void> addToLibrary(Manga manga) async {
     final token = _authProvider?.accessToken;
     _followedManga.insert(0, manga);

@@ -5,7 +5,6 @@ import 'package:sumi_app/core/utils/date_utils.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/cover_placeholder.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/soft_card.dart';
-import 'package:sumi_app/features/manga/presentation/widgets/status_pill.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/progress_bar.dart';
 
 class MangaMasonryCard extends StatelessWidget {
@@ -52,77 +51,128 @@ class MangaMasonryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompact = manga.progress == 1.0 || manga.status == ReadingStatus.planned;
-
     return SoftCard(
       onTap: onTap,
       onLongPress: onLongPress,
       padding: EdgeInsets.zero,
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppRadius.card),
-                topRight: Radius.circular(AppRadius.card),
-              ),
-              child: SizedBox(
-                height: 120,
-                child: _buildCoverImage(),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        child: SizedBox(
+          child: _buildCoverImage(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCoverImage() {
+    final coverUrl = manga.coverUrl;
+    return Stack(
+      children: [
+        if (coverUrl != null)
+          CachedNetworkImage(
+            imageUrl: coverUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorWidget: (_, __, ___) => _coverPlaceholder,
+            placeholder: (context, url) => _coverPlaceholder,
+          )
+        else
+          SizedBox(
+            height: 240,
+            child: _coverPlaceholder,
+          ),
+        // Gradient overlay
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.35),
+                    Colors.black.withValues(alpha: 0.72),
+                  ],
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+        ),
+        // Status indicator pill - top left
+        Positioned(
+          top: 10,
+          left: 10,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: _statusColor.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              _statusLabel,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ),
+        ),
+        // Bottom content
+        Positioned(
+          left: 12,
+          right: 12,
+          bottom: 12,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                manga.title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.2,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Row(
                 children: [
-                  Text(
-                    manga.title,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primaryText,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _chapterText,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.secondaryText,
-                      height: 1.3,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      StatusPill(label: _statusLabel, customColor: _statusColor),
-                      const Spacer(),
-                      Text(
-                        _timeAgo,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: AppColors.secondaryText,
-                        ),
+                  Expanded(
+                    child: Text(
+                      _chapterText,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withValues(alpha: 0.75),
+                        height: 1.3,
                       ),
-                    ],
-                  ),
-                  if (!isCompact && manga.progress > 0) ...[
-                    const SizedBox(height: 10),
-                    ProgressBar(
-                      progress: manga.progress,
-                      color: _statusColor,
                     ),
-                  ],
+                  ),
+                  Text(
+                    _timeAgo,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white.withValues(alpha: 0.65),
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 6),
+              if (manga.progress > 0 &&
+                  manga.status != ReadingStatus.completed &&
+                  manga.status != ReadingStatus.caughtUp &&
+                  manga.status != ReadingStatus.planned)
+                ProgressBar(progress: manga.progress, color: AppColors.accent),
+            ],
+          ),
         ),
+      ],
     );
   }
 
@@ -139,20 +189,5 @@ class MangaMasonryCard extends StatelessWidget {
 
   String get _timeAgo => timeAgo(manga.lastUpdate);
 
-  Widget _buildCoverImage() {
-    final coverUrl = manga.coverUrl;
-    if (coverUrl != null) {
-      return CachedNetworkImage(
-        imageUrl: coverUrl,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: 120,
-        errorWidget: (_, __, ___) => _coverPlaceholder,
-        placeholder: (context, url) => _coverPlaceholder,
-      );
-    }
-    return _coverPlaceholder;
-  }
-
-  Widget get _coverPlaceholder => const CoverPlaceholder(width: 80, height: 110);
+  Widget get _coverPlaceholder => const CoverPlaceholder(width: double.infinity, height: 240);
 }

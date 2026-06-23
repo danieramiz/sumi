@@ -204,36 +204,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final items = <Widget>[];
     for (int i = 0; i < mangas.length; i++) {
       final currentManga = mangas[i];
-      final provider = context.read<MangaProvider>();
-      final isPinned = provider.isPinned(currentManga.id);
       final card = GestureDetector(
         onLongPress: () => _showCardMenu(context, currentManga),
-        child: Stack(
-          children: [
-            AnimatedMangaCard(
-              manga: currentManga,
-              index: i,
-              onTap: () => _openDetail(context, currentManga),
-            ),
-            if (isPinned)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.push_pin_rounded,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
-          ],
+        child: AnimatedMangaCard(
+          manga: currentManga,
+          index: i,
+          onTap: () => _openDetail(context, currentManga),
         ),
       );
       if (i == 1) {
@@ -337,12 +313,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ctx,
                   Icons.settings_rounded,
                   'Settings',
-                  () {
+                  () async {
                     Navigator.of(ctx).pop();
-                    Navigator.of(context).push(
+                    await Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (_) => const SettingsScreen()),
                     );
+                    context.read<MangaProvider>().refreshSort();
                   },
                 ),
                 if (auth.isAuthenticated)
