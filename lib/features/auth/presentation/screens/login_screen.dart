@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -15,6 +14,9 @@ class _LoginScreenState extends State<LoginScreen> {
   late final WebViewController _controller;
   bool _webLoading = true;
   bool _codeProcessed = false;
+  bool _showWebView = false;
+
+  static const _logoPink = Color(0xFFFF4F6D);
 
   @override
   void initState() {
@@ -60,73 +62,157 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0D1117),
       body: SafeArea(
+        child: _showWebView ? _buildWebView(auth) : _buildLanding(),
+      ),
+    );
+  }
+
+  Widget _buildLanding() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 48),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.card,
-                      shape: BoxShape.circle,
-                      boxShadow: AppShadows.subtle,
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: const Icon(
-                          Icons.close_rounded,
-                          color: AppColors.primaryText,
-                          size: 22,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Sign in to MangaDex',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ],
+            Image.asset(
+              'assets/icons/sumi_logo_light.png',
+              width: 160,
+              height: 160,
+            ),
+            const SizedBox(height: 28),
+            const Text(
+              'Sumi',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.5,
               ),
             ),
-            if (auth.error != null)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.dropped.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  auth.error!,
-                  style: const TextStyle(fontSize: 13, color: AppColors.dropped),
-                ),
+            const SizedBox(height: 8),
+            Text(
+              'Your manga companion',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.white.withValues(alpha: 0.5),
               ),
-            Expanded(
-              child: Stack(
-                children: [
-                  WebViewWidget(controller: _controller),
-                  if (_webLoading)
-                    const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.accent,
-                      ),
-                    ),
-                ],
+            ),
+            const SizedBox(height: 48),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: FilledButton(
+                onPressed: () => setState(() => _showWebView = true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: _logoPink,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                child: const Text('Connect to MangaDex'),
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white.withValues(alpha: 0.6),
+                  side: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.15),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                child: const Text('Cancel'),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildWebView(AuthProvider auth) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () => setState(() => _showWebView = false),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'MangaDex Login',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (auth.error != null)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _logoPink.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              auth.error!,
+              style: const TextStyle(fontSize: 13, color: _logoPink),
+            ),
+          ),
+        Expanded(
+          child: Stack(
+            children: [
+              WebViewWidget(controller: _controller),
+              if (_webLoading)
+                const Center(
+                  child: CircularProgressIndicator(color: _logoPink),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

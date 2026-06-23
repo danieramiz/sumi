@@ -74,10 +74,11 @@ class MangaDexService {
   }
 
   Future<List<ChapterDto>> getChapters(String mangaId,
-      {int limit = 20, bool ascending = false, String language = 'en'}) async {
+      {int limit = 20, int offset = 0, bool ascending = false, String language = 'en'}) async {
     final uri = Uri.parse('$_baseUrl/manga/$mangaId/feed').replace(
       queryParameters: {
         'limit': limit.toString(),
+        'offset': offset.toString(),
         'translatedLanguage[]': language,
         'order[chapter]': ascending ? 'asc' : 'desc',
       },
@@ -124,11 +125,18 @@ class MangaDexService {
 
   int parseTotalChapters(Map<String, dynamic> aggregate) {
     final volumes = aggregate['volumes'] as Map<String, dynamic>? ?? {};
-    final chapters = <String>{};
+    final chapters = <int>{};
     for (final vol in volumes.values) {
       final volMap = vol as Map<String, dynamic>;
       final chs = volMap['chapters'] as Map<String, dynamic>? ?? {};
-      chapters.addAll(chs.keys);
+      for (final entry in chs.entries) {
+        final chMap = entry.value as Map<String, dynamic>;
+        final count = (chMap['count'] as int?) ?? 0;
+        final n = double.tryParse(entry.key);
+        if (n != null && n > 0 && count > 0 && n == n.roundToDouble()) {
+          chapters.add(n.round());
+        }
+      }
     }
     return chapters.length;
   }

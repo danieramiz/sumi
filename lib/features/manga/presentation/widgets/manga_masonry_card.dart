@@ -70,13 +70,19 @@ class MangaMasonryCard extends StatelessWidget {
     return Stack(
       children: [
         if (coverUrl != null)
-          CachedNetworkImage(
-            imageUrl: coverUrl,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            errorWidget: (_, __, ___) => _coverPlaceholder,
-            placeholder: (context, url) => _coverPlaceholder,
+          Hero(
+            tag: 'manga_cover_${manga.id}',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              child: CachedNetworkImage(
+                imageUrl: coverUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                errorWidget: (_, __, ___) => _coverPlaceholder,
+                placeholder: (context, url) => _coverPlaceholder,
+              ),
+            ),
           )
         else
           SizedBox(

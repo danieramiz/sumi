@@ -10,6 +10,7 @@ import 'package:sumi_app/features/manga/presentation/widgets/floating_circle_but
 import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
 import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen.dart';
 import 'package:sumi_app/features/manga/presentation/screens/search_screen.dart';
+import 'package:sumi_app/core/routes/hero_detail_route.dart';
 import 'package:sumi_app/features/settings/presentation/screens/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -241,8 +242,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openDetail(BuildContext context, Manga manga) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => MangaDetailScreen(mangaId: manga.id),
+      HeroDetailRoute(
+        page: MangaDetailScreen(mangaId: manga.id),
       ),
     );
   }
