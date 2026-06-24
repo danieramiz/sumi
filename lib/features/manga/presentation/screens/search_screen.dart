@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,10 +17,28 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _controller = TextEditingController();
+  Timer? _debounceTimer;
   bool _hasSearched = false;
+
+  void _onSearchChanged(String value) {
+    _debounceTimer?.cancel();
+    if (value.trim().isEmpty) return;
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() => _hasSearched = true);
+      ref.read(mangaProvider.notifier).searchManga(value.trim());
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() => _onSearchChanged(_controller.text));
+  }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -86,8 +105,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           ),
                         ),
                         onSubmitted: (value) {
+                          _debounceTimer?.cancel();
                           if (value.trim().isNotEmpty) {
-                            _hasSearched = true;
+                            setState(() => _hasSearched = true);
                             mangaNotifier.searchManga(value.trim());
                           }
                         },
