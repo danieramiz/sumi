@@ -95,6 +95,28 @@ class _MangaDetailScreenState extends ConsumerState<MangaDetailScreen> with Sing
     } else if (mounted) setState(() => _loading = false);
   }
 
+  Future<void> _onRefresh() async {
+    final mangaNotifier = ref.read(mangaProvider.notifier);
+    final manga = await mangaNotifier.fetchMangaDetails(widget.mangaId);
+    if (manga != null && mounted) {
+      _chaptersAscending = ref.read(preferencesServiceProvider).chaptersAscending;
+      final chapters = await mangaNotifier.fetchChapters(manga.id,
+          ascending: _chaptersAscending, limit: 20);
+      final totalCh = await mangaNotifier.fetchTotalChapters(manga.id);
+      _seenNums.clear();
+      for (final c in chapters) {
+        _seenNums.add(c.chapterNumber.round());
+      }
+      setState(() {
+        _manga = manga;
+        _chapters = chapters;
+        _totalChapters = totalCh;
+        _markTarget = _readCountFromChapters(chapters, manga.currentChapter.toInt());
+        _hasMoreChapters = true;
+      });
+    }
+  }
+
   int _readCountFromChapters(List<Chapter> chapters, int fallback) {
     final seen = <int>{};
     var max = 0;
@@ -179,28 +201,32 @@ class _MangaDetailScreenState extends ConsumerState<MangaDetailScreen> with Sing
     final manga = _manga;
     return Scaffold(
       backgroundColor: const Color(0xFF0D1117),
-      body: CustomScrollView(
-        controller: _detailScrollController,
-        slivers: [
-          _buildHero(manga),
-          if (manga == null)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: _loading
-                    ? const CircularProgressIndicator(color: Color(0xFF8B7EF6))
-                    : const Text('Manga not found', style: TextStyle(color: Colors.white54)),
-              ),
-            )
-          else ...[
-            _staggerSlide(0, _primaryStatsPanel(manga)),
-            _staggerSlide(1, _readingJourneyPanel(manga)),
-            _staggerSlide(2, _chapterTimelinePanel(manga)),
-            _staggerSlide(3, _aboutPanel(manga)),
-            _staggerSlide(4, _infoPanel(manga)),
-            const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: const Color(0xFF8B7EF6),
+        child: CustomScrollView(
+          controller: _detailScrollController,
+          slivers: [
+            _buildHero(manga),
+            if (manga == null)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: _loading
+                      ? const CircularProgressIndicator(color: Color(0xFF8B7EF6))
+                      : const Text('Manga not found', style: TextStyle(color: Colors.white54)),
+                ),
+              )
+            else ...[
+              _staggerSlide(0, _primaryStatsPanel(manga)),
+              _staggerSlide(1, _readingJourneyPanel(manga)),
+              _staggerSlide(2, _chapterTimelinePanel(manga)),
+              _staggerSlide(3, _aboutPanel(manga)),
+              _staggerSlide(4, _infoPanel(manga)),
+              const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
