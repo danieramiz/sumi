@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/core/storage/preferences_service.dart';
 
@@ -12,6 +14,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late String _language;
   late bool _scrollMode;
+  late bool _notifications;
   SortOrder _sortOrder = SortOrder.lastUpdated;
 
   static const _languages = [
@@ -35,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = PreferencesService.instance;
     _language = prefs.language;
     _scrollMode = prefs.readerScrollMode;
+    _notifications = prefs.notificationsEnabled;
   }
 
 
@@ -112,6 +116,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           final selected = code == _language;
                           return _languageTile(code, label, selected);
                         }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    const Text(
+                      'NOTIFICATIONS',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.secondaryText,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: AppShadows.subtle,
+                      ),
+                      child: SwitchListTile(
+                        value: _notifications,
+                        onChanged: (v) {
+                          setState(() => _notifications = v);
+                          final prefs = PreferencesService.instance;
+                          prefs.notificationsEnabled = v;
+                          prefs.save();
+                          HomeWidget.saveWidgetData<bool>(
+                              'notifications_enabled', v);
+                          if (v) {
+                            const MethodChannel('sumi_widget_background')
+                                .invokeMethod('requestNotificationPermission');
+                          }
+                        },
+                        title: const Text(
+                          'New chapter notifications',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: AppColors.primaryText,
+                          ),
+                        ),
+                        subtitle: const Text(
+                          'Get notified when new chapters are released',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.secondaryText,
+                          ),
+                        ),
+                        activeColor: AppColors.accent,
                       ),
                     ),
                     const SizedBox(height: 32),

@@ -48,6 +48,7 @@ class WidgetUpdateWorker(
 
             saveWidgetData(items)
             updateAllWidgets()
+            checkForNewChapters(items)
             android.util.Log.d("SumiWidget", "Widget update completed: ${items.size} manga")
             Result.success()
         } catch (e: Exception) {
@@ -242,6 +243,43 @@ class WidgetUpdateWorker(
             android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
         )
         views.setOnClickPendingIntent(viewId, pi)
+    }
+
+    private fun checkForNewChapters(items: List<MangaItem>) {
+        val ctx = applicationContext
+        val prefs = ctx.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+
+        val notificationsEnabled = prefs.getBoolean("notifications_enabled", true)
+        if (!notificationsEnabled) return
+
+        val newChapters = mutableListOf<SumiNotificationManager.NewChapterInfo>()
+        val now = System.currentTimeMillis()
+        val oneDayMs = 86400000L
+
+        for (item in items) {
+            val lastChapter = prefs.getString("last_chapter_${item.id}", null)
+            val lastNotified = prefs.getLong("last_notified_${item.id}", 0)
+
+            if (item.lastChapter != null && item.lastChapter != lastChapter) {
+                if (now - lastNotified > oneDayMs) {
+                    newChapters.add(SumiNotificationManager.NewChapterInfo(
+                        title = item.title,
+                        chapterLabel = "Ch. ${item.lastChapter}",
+                        mangaId = item.id
+                    ))
+                    prefs.edit()
+                        .putString("last_chapter_${item.id}", item.lastChapter)
+                        .putLong("last_notified_${item.id}", now)
+                        .apply()
+                }
+            } else if (item.lastChapter != null && lastChapter == null) {
+                prefs.edit().putString("last_chapter_${item.id}", item.lastChapter).apply()
+            }
+        }
+
+        if (newChapters.isNotEmpty()) {
+            SumiNotificationManager.showNotification(ctx, newChapters)
+        }
     }
 
     companion object {
