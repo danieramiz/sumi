@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/home_widgets/data/sumi_widget_service.dart';
 import 'package:sumi_app/features/home_widgets/data/widget_mock_data.dart';
@@ -35,7 +36,7 @@ class _WidgetPreviewScreenState extends State<WidgetPreviewScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.chevron_left, color: AppColors.primaryText),
-          onPressed: () => Navigator.of(context).pop(),
+           onPressed: () => context.pop(),
         ),
       ),
       body: ListView(

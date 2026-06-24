@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sumi_app/core/providers/preferences_service_provider.dart';
 import 'package:sumi_app/core/utils/date_utils.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
-import 'package:sumi_app/features/manga/presentation/screens/chapter_reader_screen.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_notifier.dart';
 
 class MangaDetailScreen extends ConsumerStatefulWidget {
@@ -135,7 +135,7 @@ class _MangaDetailScreenState extends ConsumerState<MangaDetailScreen> with Sing
 
   Future<void> _popWithAnimation() async {
     await _staggerController.reverse();
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) context.pop();
   }
 
   Future<void> _loadMoreChapters() async {
@@ -455,23 +455,14 @@ class _MangaDetailScreenState extends ConsumerState<MangaDetailScreen> with Sing
   Widget _chapterTile(Chapter ch) {
     final dateStr = ch.publishDate != null ? timeAgo(ch.publishDate!) : null;
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => ChapterReaderScreen(
-              chapterId: ch.id,
-              onClose: () {
-                if (_manga != null) {
-                  ref.read(mangaProvider.notifier).markChapterRead(_manga!.id, ch.id)
-                      .then((_) {
-                    _markTarget = ch.chapterNumber.toInt();
-                    _loadChapters();
-                  });
-                }
-              },
-            ),
-          ),
-        );
+      onTap: () async {
+        final mangaId = _manga?.id;
+        final uri = mangaId != null
+            ? '/reader/${ch.id}?mangaId=$mangaId&chapterNum=${ch.chapterNumber.toInt()}'
+            : '/reader/${ch.id}';
+        await context.push(uri);
+        _markTarget = ch.chapterNumber.toInt();
+        _loadChapters();
       },
       onLongPress: _manga != null ? () => _showChapterMenu(ch) : null,
       child: Container(
@@ -624,7 +615,7 @@ class _MangaDetailScreenState extends ConsumerState<MangaDetailScreen> with Sing
                 _darkMenuItem(ctx, Icons.remove_circle_outline_rounded, 'Remove from library', Colors.redAccent, () {
                   Navigator.of(ctx).pop();
                   ref.read(mangaProvider.notifier).removeFromLibrary(_manga!.id);
-                  Navigator.of(context).pop();
+                  context.pop();
                 }),
               ],
             ),

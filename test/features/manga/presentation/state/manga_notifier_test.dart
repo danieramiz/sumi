@@ -9,7 +9,6 @@ import 'package:sumi_app/features/manga/data/models/chapter_pages_dto.dart';
 import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 import 'package:sumi_app/features/manga/data/providers/manga_repository_provider.dart';
 import 'package:sumi_app/features/manga/data/repositories/manga_repository.dart';
-import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_notifier.dart';
 

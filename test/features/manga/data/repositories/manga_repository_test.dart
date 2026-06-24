@@ -7,7 +7,6 @@ import 'package:sumi_app/features/manga/data/models/chapter_dto.dart';
 import 'package:sumi_app/features/manga/data/models/chapter_pages_dto.dart';
 import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 import 'package:sumi_app/features/manga/data/repositories/manga_repository.dart';
-import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 
 class MockMangaService implements MangaService {

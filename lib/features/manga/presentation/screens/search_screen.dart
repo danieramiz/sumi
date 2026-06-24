@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_notifier.dart';
-import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/cover_placeholder.dart';
-import 'package:sumi_app/core/routes/hero_detail_route.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -51,7 +50,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       shape: const CircleBorder(),
                       child: InkWell(
                         customBorder: const CircleBorder(),
-                        onTap: () => Navigator.of(context).pop(),
+                        onTap: () => context.pop(),
                         child: const Icon(
                           Icons.arrow_back_rounded,
                           color: AppColors.primaryText,
@@ -146,13 +145,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       return _SearchResultCard(
                         manga: manga,
                         inLibrary: mangaNotifier.isInLibrary(manga.id),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            HeroDetailRoute(
-                              page: MangaDetailScreen(mangaId: manga.id),
-                            ),
-                          );
-                        },
+                        onTap: () => context.push('/manga/${manga.id}'),
                         onAdd: () => mangaNotifier.addToLibrary(manga),
                         onRemove: () => mangaNotifier.removeFromLibrary(manga.id),
                       );

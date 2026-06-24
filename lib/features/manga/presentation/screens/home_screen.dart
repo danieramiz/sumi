@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sumi_app/app/theme.dart';
-import 'package:sumi_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_notifier.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/animated_manga_card.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/floating_circle_button.dart';
 import 'package:sumi_app/features/manga/presentation/state/manga_notifier.dart';
-import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen.dart';
-import 'package:sumi_app/features/manga/presentation/screens/search_screen.dart';
-import 'package:sumi_app/core/routes/hero_detail_route.dart';
-import 'package:sumi_app/features/settings/presentation/screens/settings_screen.dart';
-import 'package:sumi_app/features/home_widgets/presentation/widget_preview_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -92,12 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 bottom: 24,
                 child: FloatingCircleButton(
                   icon: Icons.search_rounded,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const SearchScreen()),
-                    );
-                  },
+                  onTap: () => context.push('/search'),
                 ),
               ),
           ],
@@ -149,13 +139,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   width: double.infinity,
                   height: 52,
                   child: FilledButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const LoginScreen(),
-                        ),
-                      );
-                    },
+                    onPressed: () => context.push('/login'),
                     style: FilledButton.styleFrom(
                       backgroundColor: _logoPink,
                       foregroundColor: Colors.white,
@@ -247,11 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _openDetail(BuildContext context, Manga manga) {
-    Navigator.of(context).push(
-      HeroDetailRoute(
-        page: MangaDetailScreen(mangaId: manga.id),
-      ),
-    );
+    context.push('/manga/${manga.id}');
   }
 
   Widget _buildFloatingButtons(BuildContext context) {
@@ -262,11 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           bottom: 24,
           child: FloatingCircleButton(
             icon: Icons.search_rounded,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SearchScreen()),
-              );
-            },
+            onTap: () => context.push('/search'),
           ),
         ),
         Positioned(
@@ -324,10 +300,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   'Settings',
                   () async {
                     Navigator.of(ctx).pop();
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const SettingsScreen()),
-                    );
+                    await context.push('/settings');
                     mangaNotifier.refreshSort();
                   },
                 ),
@@ -337,10 +310,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   'Widget Preview',
                   () {
                     Navigator.of(ctx).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const WidgetPreviewScreen()),
-                    );
+                    context.push('/widget-preview');
                   },
                 ),
                 const SizedBox(height: 8),

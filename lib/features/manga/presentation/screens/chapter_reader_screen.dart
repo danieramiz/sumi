@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sumi_app/core/providers/preferences_service_provider.dart';
 import 'package:sumi_app/features/manga/data/interfaces/manga_service.dart';
 import 'package:sumi_app/features/manga/data/providers/manga_service_provider.dart';
+import 'package:sumi_app/features/manga/presentation/state/manga_notifier.dart';
 
 enum ReadingMode { paged, scroll }
 
 class ChapterReaderScreen extends ConsumerStatefulWidget {
   final String chapterId;
-  final VoidCallback? onClose;
+  final String? mangaId;
+  final int? chapterNumber;
 
-  const ChapterReaderScreen({super.key, required this.chapterId, this.onClose});
+  const ChapterReaderScreen({
+    super.key,
+    required this.chapterId,
+    this.mangaId,
+    this.chapterNumber,
+  });
 
   @override
   ConsumerState<ChapterReaderScreen> createState() => _ChapterReaderScreenState();
@@ -53,6 +61,14 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
         });
       }
     }
+  }
+
+  void _markReadAndPop() {
+    final mangaId = widget.mangaId;
+    if (mangaId != null) {
+      ref.read(mangaProvider.notifier).markChapterRead(mangaId, widget.chapterId);
+    }
+    context.pop();
   }
 
   @override
@@ -175,8 +191,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                 child: InkWell(
                   customBorder: const CircleBorder(),
                   onTap: () {
-                    widget.onClose?.call();
-                    Navigator.of(context).pop();
+                    _markReadAndPop();
                   },
                   child: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
                 ),

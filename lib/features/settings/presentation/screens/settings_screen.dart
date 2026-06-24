@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/core/providers/preferences_service_provider.dart';
@@ -66,7 +67,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     shape: const CircleBorder(),
                     child: InkWell(
                       customBorder: const CircleBorder(),
-                      onTap: () => Navigator.of(context).pop(),
+                      onTap: () => context.pop(),
                       child: const Icon(
                         Icons.arrow_back_rounded,
                         color: AppColors.primaryText,

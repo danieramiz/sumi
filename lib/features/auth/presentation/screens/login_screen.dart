@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_notifier.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -51,7 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (code != null && code.isNotEmpty) {
         _codeProcessed = true;
         authNotifier.exchangeCode(code).then((_) {
-          if (mounted) Navigator.of(context).pop();
+          if (mounted) context.pop();
         });
       }
     }
@@ -124,7 +125,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               width: double.infinity,
               height: 52,
               child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => context.pop(),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white.withValues(alpha: 0.6),
                   side: BorderSide(
