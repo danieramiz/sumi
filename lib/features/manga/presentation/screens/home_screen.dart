@@ -12,6 +12,7 @@ import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen
 import 'package:sumi_app/features/manga/presentation/screens/search_screen.dart';
 import 'package:sumi_app/core/routes/hero_detail_route.dart';
 import 'package:sumi_app/features/settings/presentation/screens/settings_screen.dart';
+import 'package:sumi_app/features/home_widgets/presentation/widget_preview_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -323,6 +324,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     context.read<MangaProvider>().refreshSort();
                   },
                 ),
+                _menuItem(
+                  ctx,
+                  Icons.widgets_rounded,
+                  'Widget Preview',
+                  () {
+                    Navigator.of(ctx).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const WidgetPreviewScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
                 if (auth.isAuthenticated)
                   _menuItem(
                     ctx,
