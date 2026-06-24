@@ -41,7 +41,8 @@ dependencies:
   webview_flutter: ^4.13.0
   cached_network_image: ^3.4.1
   home_widget: ^0.7.0
-
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +53,10 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.3
+  riverpod_generator: ^2.6.3
+  build_runner: ^2.4.13
+  mockito: ^5.4.4
+  build_runner_core: ^7.3.1
 
 flutter_launcher_icons:
   android: true

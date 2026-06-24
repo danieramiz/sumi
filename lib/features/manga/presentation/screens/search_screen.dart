@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
-import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
+import 'package:sumi_app/features/manga/presentation/state/manga_notifier.dart';
 import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/cover_placeholder.dart';
 import 'package:sumi_app/core/routes/hero_detail_route.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _controller = TextEditingController();
   bool _hasSearched = false;
 
@@ -27,7 +27,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<MangaProvider>();
+    final mangaState = ref.watch(mangaProvider);
+    final mangaNotifier = ref.read(mangaProvider.notifier);
 
     return Scaffold(
       body: SafeArea(
@@ -88,7 +89,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         onSubmitted: (value) {
                           if (value.trim().isNotEmpty) {
                             _hasSearched = true;
-                            provider.searchManga(value.trim());
+                            mangaNotifier.searchManga(value.trim());
                           }
                         },
                       ),
@@ -97,17 +98,17 @@ class _SearchScreenState extends State<SearchScreen> {
                 ],
               ),
             ),
-            if (provider.isLoading)
+            if (mangaState.isLoading)
               const Expanded(
                 child: Center(child: CircularProgressIndicator()),
               )
-            else if (provider.error != null)
+            else if (mangaState.error != null)
               Expanded(
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Text(
-                      provider.error!,
+                      mangaState.error!,
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: AppColors.dropped),
                     ),
@@ -123,7 +124,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
               )
-            else if (provider.searchResults.isEmpty)
+            else if (mangaState.searchResults.isEmpty)
               const Expanded(
                 child: Center(
                   child: Text(
@@ -138,13 +139,13 @@ class _SearchScreenState extends State<SearchScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ListView.separated(
                     padding: const EdgeInsets.only(top: 8, bottom: 100),
-                    itemCount: provider.searchResults.length,
+                    itemCount: mangaState.searchResults.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
-                      final manga = provider.searchResults[index];
+                      final manga = mangaState.searchResults[index];
                       return _SearchResultCard(
                         manga: manga,
-                        inLibrary: provider.isInLibrary(manga.id),
+                        inLibrary: mangaNotifier.isInLibrary(manga.id),
                         onTap: () {
                           Navigator.of(context).push(
                             HeroDetailRoute(
@@ -152,8 +153,8 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           );
                         },
-                        onAdd: () => provider.addToLibrary(manga),
-                        onRemove: () => provider.removeFromLibrary(manga.id),
+                        onAdd: () => mangaNotifier.addToLibrary(manga),
+                        onRemove: () => mangaNotifier.removeFromLibrary(manga.id),
                       );
                     },
                   ),

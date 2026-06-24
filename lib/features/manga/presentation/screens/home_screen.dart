@@ -1,53 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:provider/provider.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/auth/presentation/screens/login_screen.dart';
-import 'package:sumi_app/features/auth/presentation/state/auth_provider.dart';
+import 'package:sumi_app/features/auth/presentation/state/auth_notifier.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/animated_manga_card.dart';
 import 'package:sumi_app/features/manga/presentation/widgets/floating_circle_button.dart';
-import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
+import 'package:sumi_app/features/manga/presentation/state/manga_notifier.dart';
 import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen.dart';
 import 'package:sumi_app/features/manga/presentation/screens/search_screen.dart';
 import 'package:sumi_app/core/routes/hero_detail_route.dart';
 import 'package:sumi_app/features/settings/presentation/screens/settings_screen.dart';
 import 'package:sumi_app/features/home_widgets/presentation/widget_preview_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _showWelcome = true;
   bool _libraryFetched = false;
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    final mangaProvider = context.watch<MangaProvider>();
+    final authState = ref.watch(authProvider);
+    final mangaState = ref.watch(mangaProvider);
+    final mangaNotifier = ref.read(mangaProvider.notifier);
 
-    if (!auth.initialized) {
+    if (!authState.initialized) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    if (_showWelcome && !auth.isAuthenticated) {
+    if (_showWelcome && !authState.isAuthenticated) {
       return _buildWelcomeScreen(context);
     }
 
-    if (auth.isAuthenticated && !_libraryFetched) {
+    if (authState.isAuthenticated && !_libraryFetched) {
       _libraryFetched = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        mangaProvider.fetchLibrary();
+        mangaNotifier.fetchLibrary();
       });
     }
 
-    final mangas = mangaProvider.followedManga;
+    final mangas = mangaState.followedManga;
 
     return Scaffold(
       body: SafeArea(
@@ -59,8 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.accent,
               child: CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(child: _buildHeader(context, auth)),
-                if (mangaProvider.isLibraryLoading)
+                SliverToBoxAdapter(child: _buildHeader(context)),
+                if (mangaState.isLibraryLoading)
                   const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
                   )
@@ -202,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, AuthProvider auth) {
+  Widget _buildHeader(BuildContext context) {
     return const SizedBox(height: 16);
   }
 
@@ -238,10 +239,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _onRefresh(BuildContext context) async {
-    final auth = context.read<AuthProvider>();
-    final mangaProvider = context.read<MangaProvider>();
-    if (auth.isAuthenticated) {
-      await mangaProvider.fetchLibrary();
+    final authState = ref.read(authProvider);
+    final mangaNotifier = ref.read(mangaProvider.notifier);
+    if (authState.isAuthenticated) {
+      await mangaNotifier.fetchLibrary();
     }
   }
 
@@ -281,7 +282,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showMenu(BuildContext context) {
-    final auth = context.read<AuthProvider>();
+    final authState = ref.read(authProvider);
+    final authNotifier = ref.read(authProvider.notifier);
+    final mangaNotifier = ref.read(mangaProvider.notifier);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -325,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       MaterialPageRoute(
                           builder: (_) => const SettingsScreen()),
                     );
-                    context.read<MangaProvider>().refreshSort();
+                    mangaNotifier.refreshSort();
                   },
                 ),
                 _menuItem(
@@ -341,14 +344,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 const SizedBox(height: 8),
-                if (auth.isAuthenticated)
+                if (authState.isAuthenticated)
                   _menuItem(
                     ctx,
                     Icons.logout_rounded,
                     'Logout',
                     () {
                       Navigator.of(ctx).pop();
-                      auth.logout();
+                      authNotifier.logout();
                       setState(() {
                         _showWelcome = true;
                         _libraryFetched = false;
@@ -391,8 +394,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showCardMenu(BuildContext context, Manga manga) {
-    final provider = context.read<MangaProvider>();
-    final pinned = provider.isPinned(manga.id);
+    final mangaNotifier = ref.read(mangaProvider.notifier);
+    final pinned = mangaNotifier.isPinned(manga.id);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -430,7 +433,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
                       Navigator.of(ctx).pop();
-                      provider.togglePin(manga.id);
+                      mangaNotifier.togglePin(manga.id);
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),

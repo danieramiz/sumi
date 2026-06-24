@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sumi_app/features/widgets/data/sumi_widget_entry.dart';
-import 'package:sumi_app/features/widgets/presentation/widgets/widget_cover_background.dart';
-import 'package:sumi_app/features/widgets/presentation/widgets/widget_progress_bar.dart';
+import 'package:sumi_app/features/home_widgets/data/sumi_widget_entry.dart';
+import 'package:sumi_app/features/home_widgets/presentation/widgets/widget_cover_background.dart';
+import 'package:sumi_app/features/home_widgets/presentation/widgets/widget_progress_bar.dart';
 
 class SumiMediumWidgetPreview extends StatelessWidget {
   final SumiWidgetEntry entry;

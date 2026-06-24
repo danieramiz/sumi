@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:sumi_app/app/theme.dart';
+import 'package:sumi_app/core/providers/preferences_service_provider.dart';
 import 'package:sumi_app/core/storage/preferences_service.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late String _language;
   late bool _scrollMode;
   late bool _notifications;
@@ -35,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    final prefs = PreferencesService.instance;
+    final prefs = ref.read(preferencesServiceProvider);
     _language = prefs.language;
     _scrollMode = prefs.readerScrollMode;
     _notifications = prefs.notificationsEnabled;
@@ -139,7 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: _notifications,
                         onChanged: (v) {
                           setState(() => _notifications = v);
-                          final prefs = PreferencesService.instance;
+                          final prefs = ref.read(preferencesServiceProvider);
                           prefs.notificationsEnabled = v;
                           prefs.save();
                           HomeWidget.saveWidgetData<bool>(
@@ -189,7 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             value: _scrollMode,
                             onChanged: (v) {
                               setState(() => _scrollMode = v);
-                              final prefs = PreferencesService.instance;
+                              final prefs = ref.read(preferencesServiceProvider);
                               prefs.readerScrollMode = v;
                               prefs.save();
                             },
@@ -261,7 +263,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(20),
         onTap: () async {
           setState(() => _language = code);
-          final prefs = PreferencesService.instance;
+          final prefs = ref.read(preferencesServiceProvider);
           prefs.language = code;
           await prefs.save();
         },
@@ -296,7 +298,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(20),
         onTap: () async {
           setState(() => _sortOrder = order);
-          final prefs = PreferencesService.instance;
+          final prefs = ref.read(preferencesServiceProvider);
           prefs.sortOrder = order;
           await prefs.save();
         },

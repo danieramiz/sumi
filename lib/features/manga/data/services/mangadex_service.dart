@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sumi_app/core/constants/api_config.dart';
+import 'package:sumi_app/features/manga/data/interfaces/manga_service.dart';
 import 'package:sumi_app/features/manga/data/models/chapter_dto.dart';
 import 'package:sumi_app/features/manga/data/models/chapter_pages_dto.dart';
 import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 
-class MangaDexService {
+class MangaDexService implements MangaService {
   static const _baseUrl = ApiConfig.mangadexBaseUrl;
   final http.Client _client;
 

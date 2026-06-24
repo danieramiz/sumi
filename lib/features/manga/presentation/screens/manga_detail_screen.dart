@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:provider/provider.dart';
-import 'package:sumi_app/core/storage/preferences_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sumi_app/core/providers/preferences_service_provider.dart';
 import 'package:sumi_app/core/utils/date_utils.dart';
 import 'package:sumi_app/features/manga/domain/entities/manga.dart';
 import 'package:sumi_app/features/manga/domain/entities/chapter.dart';
 import 'package:sumi_app/features/manga/presentation/screens/chapter_reader_screen.dart';
-import 'package:sumi_app/features/manga/presentation/state/manga_provider.dart';
+import 'package:sumi_app/features/manga/presentation/state/manga_notifier.dart';
 
-class MangaDetailScreen extends StatefulWidget {
+class MangaDetailScreen extends ConsumerStatefulWidget {
   final String mangaId;
   const MangaDetailScreen({super.key, required this.mangaId});
   @override
-  State<MangaDetailScreen> createState() => _MangaDetailScreenState();
+  ConsumerState<MangaDetailScreen> createState() => _MangaDetailScreenState();
 }
 
-class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTickerProviderStateMixin {
+class _MangaDetailScreenState extends ConsumerState<MangaDetailScreen> with SingleTickerProviderStateMixin {
   Manga? _manga;
   bool _loading = true;
   List<Chapter> _chapters = [];
@@ -41,10 +41,10 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTicker
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    final provider = context.read<MangaProvider>();
-    final cached = provider.getMangaById(widget.mangaId);
+    final mangaNotifier = ref.read(mangaProvider.notifier);
+    final cached = mangaNotifier.getMangaById(widget.mangaId);
     if (cached != null) {
-      _chaptersAscending = PreferencesService.instance.chaptersAscending;
+      _chaptersAscending = ref.read(preferencesServiceProvider).chaptersAscending;
       _manga = cached;
     }
     _loadManga();
@@ -68,16 +68,16 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTicker
   }
 
   Future<void> _loadManga() async {
-    final provider = context.read<MangaProvider>();
-    var manga = provider.getMangaById(widget.mangaId);
+    final mangaNotifier = ref.read(mangaProvider.notifier);
+    var manga = mangaNotifier.getMangaById(widget.mangaId);
     if (manga == null) {
-      manga = await provider.fetchMangaDetails(widget.mangaId);
+      manga = await mangaNotifier.fetchMangaDetails(widget.mangaId);
     }
     if (manga != null) {
-      _chaptersAscending = PreferencesService.instance.chaptersAscending;
-      final chapters = await provider.fetchChapters(manga.id,
+      _chaptersAscending = ref.read(preferencesServiceProvider).chaptersAscending;
+      final chapters = await mangaNotifier.fetchChapters(manga.id,
           ascending: _chaptersAscending, limit: 20);
-      final totalCh = await provider.fetchTotalChapters(manga.id);
+      final totalCh = await mangaNotifier.fetchTotalChapters(manga.id);
       _seenNums.clear();
       for (final c in chapters) {
         _seenNums.add(c.chapterNumber.round());
@@ -142,8 +142,8 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTicker
     if (_isLoadingMore || _manga == null) return;
     _isLoadingMore = true;
     if (mounted) setState(() {});
-    final provider = context.read<MangaProvider>();
-    final more = await provider.fetchChapters(_manga!.id,
+    final mangaNotifier = ref.read(mangaProvider.notifier);
+    final more = await mangaNotifier.fetchChapters(_manga!.id,
         ascending: _chaptersAscending, offset: _chapters.length, limit: 20);
     if (mounted) {
       final deduped = more.where((c) => _seenNums.add(c.chapterNumber.round())).toList();
@@ -160,9 +160,9 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTicker
 
   Future<void> _loadChapters() async {
     if (_manga == null) return;
-    final provider = context.read<MangaProvider>();
+    final mangaNotifier = ref.read(mangaProvider.notifier);
     _hasMoreChapters = true;
-    final chapters = await provider.fetchChapters(_manga!.id,
+    final chapters = await mangaNotifier.fetchChapters(_manga!.id,
         ascending: _chaptersAscending, limit: 20);
     _seenNums.clear();
     for (final c in chapters) {
@@ -462,7 +462,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTicker
               chapterId: ch.id,
               onClose: () {
                 if (_manga != null) {
-                  context.read<MangaProvider>().markChapterRead(_manga!.id, ch.id)
+                  ref.read(mangaProvider.notifier).markChapterRead(_manga!.id, ch.id)
                       .then((_) {
                     _markTarget = ch.chapterNumber.toInt();
                     _loadChapters();
@@ -623,7 +623,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTicker
                 const SizedBox(height: 20),
                 _darkMenuItem(ctx, Icons.remove_circle_outline_rounded, 'Remove from library', Colors.redAccent, () {
                   Navigator.of(ctx).pop();
-                  context.read<MangaProvider>().removeFromLibrary(_manga!.id);
+                  ref.read(mangaProvider.notifier).removeFromLibrary(_manga!.id);
                   Navigator.of(context).pop();
                 }),
               ],
@@ -635,7 +635,7 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTicker
   }
 
   void _showChapterMenu(Chapter ch) {
-    final provider = context.read<MangaProvider>();
+    final mangaNotifier = ref.read(mangaProvider.notifier);
     final idx = _chapters.indexOf(ch);
     final hasPrevUnread = _chapters.sublist(idx + 1).any((c) => !c.isRead);
     showModalBottomSheet(
@@ -664,14 +664,14 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTicker
                     for (int i = idx + 1; i < _chapters.length; i++) {
                       if (!_chapters[i].isRead) ids.add(_chapters[i].id);
                     }
-                    provider.markChaptersRead(_manga!.id, ids).then((_) {
+                    mangaNotifier.markChaptersRead(_manga!.id, ids).then((_) {
                       _markTarget = ch.chapterNumber.toInt();
                       _loadChapters();
                     });
                   }),
                 _darkMenuItem(ctx, Icons.check_rounded, 'Mark as read', const Color(0xFF8B7EF6), () {
                   Navigator.of(ctx).pop();
-                  provider.markChapterRead(_manga!.id, ch.id).then((_) {
+                  mangaNotifier.markChapterRead(_manga!.id, ch.id).then((_) {
                     _markTarget = ch.chapterNumber.toInt();
                     _loadChapters();
                   });
@@ -686,11 +686,11 @@ class _MangaDetailScreenState extends State<MangaDetailScreen> with SingleTicker
 
   Future<void> _toggleChapterSort() async {
     if (_manga == null) return;
-    final prefs = PreferencesService.instance;
+    final prefs = ref.read(preferencesServiceProvider);
     prefs.chaptersAscending = !prefs.chaptersAscending;
     await prefs.save();
-    final provider = context.read<MangaProvider>();
-    final chapters = await provider.fetchChapters(_manga!.id, ascending: prefs.chaptersAscending);
+    final mangaNotifier = ref.read(mangaProvider.notifier);
+    final chapters = await mangaNotifier.fetchChapters(_manga!.id, ascending: prefs.chaptersAscending);
     if (mounted) setState(() {
       _chaptersAscending = prefs.chaptersAscending;
       _chapters = chapters;

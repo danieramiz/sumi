@@ -1,4 +1,4 @@
-import 'package:sumi_app/features/widgets/data/sumi_widget_entry.dart';
+import 'package:sumi_app/features/home_widgets/data/sumi_widget_entry.dart';
 
 class WidgetMockData {
   WidgetMockData._();

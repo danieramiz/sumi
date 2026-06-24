@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sumi_app/features/widgets/data/widget_mock_data.dart';
-import 'package:sumi_app/features/widgets/presentation/widgets/sumi_large_widget_preview.dart';
+import 'package:sumi_app/features/home_widgets/data/widget_mock_data.dart';
+import 'package:sumi_app/features/home_widgets/presentation/widgets/sumi_large_widget_preview.dart';
 
 void main() {
   testWidgets('SumiLargeWidgetPreview shows header and updates',

@@ -5,8 +5,9 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:sumi_app/core/constants/api_config.dart';
+import 'package:sumi_app/features/auth/data/interfaces/auth_service.dart';
 
-class MangaDexAuthService {
+class MangaDexAuthService implements AuthService {
   static const _authUrl = ApiConfig.mangadexAuthUrl;
   static const _tokenUrl = ApiConfig.mangadexTokenUrl;
   static const _redirectUri = ApiConfig.mangadexRedirectUri;
@@ -22,11 +23,13 @@ class MangaDexAuthService {
 
   MangaDexAuthService({http.Client? client}) : _client = client ?? http.Client();
 
+  @override
   bool get isAuthenticated =>
       _sessionToken != null &&
       _expiresAt != null &&
       DateTime.now().isBefore(_expiresAt!);
 
+  @override
   String? get accessToken => _sessionToken;
 
   String _generateCodeVerifier() {
@@ -41,6 +44,7 @@ class MangaDexAuthService {
     return base64Url.encode(digest.bytes).replaceAll('=', '');
   }
 
+  @override
   String buildAuthorizationUrl() {
     _lastCodeVerifier = _generateCodeVerifier();
     final codeChallenge = _generateCodeChallenge(_lastCodeVerifier!);
@@ -53,6 +57,7 @@ class MangaDexAuthService {
     }).toString();
   }
 
+  @override
   Future<String?> exchangeCode(String code) async {
     if (_lastCodeVerifier == null) {
       return 'No code verifier available';
@@ -85,6 +90,7 @@ class MangaDexAuthService {
     }
   }
 
+  @override
   Future<void> loadToken() async {
     try {
       final dir = await getApplicationDocumentsDirectory();
@@ -122,6 +128,7 @@ class MangaDexAuthService {
     } catch (_) {}
   }
 
+  @override
   Future<void> logout() async {
     _sessionToken = null;
     _refreshToken = null;
@@ -130,6 +137,7 @@ class MangaDexAuthService {
     await _clearToken();
   }
 
+  @override
   void dispose() {
     _client.close();
   }

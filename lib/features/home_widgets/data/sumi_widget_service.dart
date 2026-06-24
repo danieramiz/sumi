@@ -1,12 +1,14 @@
 import 'package:home_widget/home_widget.dart';
+import 'package:sumi_app/features/home_widgets/data/interfaces/widget_service.dart';
 import 'package:sumi_app/features/home_widgets/data/sumi_widget_data.dart';
 import 'package:sumi_app/features/home_widgets/data/widget_image_service.dart';
 
-class SumiWidgetService {
+class SumiWidgetService implements WidgetService {
   static const _smallWidget = 'SumiSmallWidgetProvider';
   static const _mediumWidget = 'SumiMediumWidgetProvider';
   static const _largeWidget = 'SumiLargeWidgetProvider';
 
+  @override
   Future<void> updateAndroidWidgets(SumiWidgetData data) async {
     await _saveData(data);
     await _triggerUpdates();

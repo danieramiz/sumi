@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:sumi_app/core/storage/preferences_service.dart';
-import 'package:sumi_app/features/manga/data/services/mangadex_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sumi_app/core/providers/preferences_service_provider.dart';
+import 'package:sumi_app/features/manga/data/interfaces/manga_service.dart';
+import 'package:sumi_app/features/manga/data/providers/manga_service_provider.dart';
 
 enum ReadingMode { paged, scroll }
 
-class ChapterReaderScreen extends StatefulWidget {
+class ChapterReaderScreen extends ConsumerStatefulWidget {
   final String chapterId;
   final VoidCallback? onClose;
 
   const ChapterReaderScreen({super.key, required this.chapterId, this.onClose});
 
   @override
-  State<ChapterReaderScreen> createState() => _ChapterReaderScreenState();
+  ConsumerState<ChapterReaderScreen> createState() => _ChapterReaderScreenState();
 }
 
-class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
-  final MangaDexService _api = MangaDexService();
+class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
+  late final MangaService _api;
   List<String> _pageUrls = [];
   bool _loading = true;
   String? _error;
@@ -27,7 +29,8 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
   @override
   void initState() {
     super.initState();
-    _mode = PreferencesService.instance.readerScrollMode
+    _api = ref.read(mangaServiceProvider);
+    _mode = ref.read(preferencesServiceProvider).readerScrollMode
         ? ReadingMode.scroll
         : ReadingMode.paged;
     _loadPages();
@@ -55,7 +58,6 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
   @override
   void dispose() {
     _pageController.dispose();
-    _api.dispose();
     super.dispose();
   }
 
@@ -207,7 +209,7 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: () {
-                      final prefs = PreferencesService.instance;
+                      final prefs = ref.read(preferencesServiceProvider);
                       prefs.readerScrollMode = _mode != ReadingMode.scroll;
                       prefs.save();
                       setState(() {

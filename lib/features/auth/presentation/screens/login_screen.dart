@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:sumi_app/features/auth/presentation/state/auth_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sumi_app/features/auth/presentation/state/auth_notifier.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   late final WebViewController _controller;
   bool _webLoading = true;
   bool _codeProcessed = false;
@@ -21,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    final auth = context.read<AuthProvider>();
+    final authNotifier = ref.read(authProvider.notifier);
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
           onPageStarted: (url) {
             if (!mounted) return;
             setState(() => _webLoading = true);
-            _checkUrlForCode(url, auth);
+            _checkUrlForCode(url, authNotifier);
           },
           onPageFinished: (_) {
             if (mounted) setState(() => _webLoading = false);
@@ -39,10 +39,10 @@ class _LoginScreenState extends State<LoginScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(auth.buildAuthorizationUrl()));
+      ..loadRequest(Uri.parse(authNotifier.buildAuthorizationUrl()));
   }
 
-  void _checkUrlForCode(String url, AuthProvider auth) {
+  void _checkUrlForCode(String url, AuthNotifier authNotifier) {
     if (_codeProcessed) return;
     final uri = Uri.tryParse(url);
     if (uri == null) return;
@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final code = uri.queryParameters['code'];
       if (code != null && code.isNotEmpty) {
         _codeProcessed = true;
-        auth.exchangeCode(code).then((_) {
+        authNotifier.exchangeCode(code).then((_) {
           if (mounted) Navigator.of(context).pop();
         });
       }
@@ -59,12 +59,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D1117),
       body: SafeArea(
-        child: _showWebView ? _buildWebView(auth) : _buildLanding(),
+        child: _showWebView ? _buildWebView(authState) : _buildLanding(),
       ),
     );
   }
@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildWebView(AuthProvider auth) {
+  Widget _buildWebView(AuthState authState) {
     return Column(
       children: [
         Padding(
@@ -187,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
         ),
-        if (auth.error != null)
+        if (authState.error != null)
           Container(
             width: double.infinity,
             margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -197,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              auth.error!,
+              authState.error!,
               style: const TextStyle(fontSize: 13, color: _logoPink),
             ),
           ),

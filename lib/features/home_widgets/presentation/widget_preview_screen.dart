@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:sumi_app/app/theme.dart';
 import 'package:sumi_app/features/home_widgets/data/sumi_widget_service.dart';
-import 'package:sumi_app/features/widgets/presentation/widgets/sumi_large_widget_preview.dart';
-import 'package:sumi_app/features/widgets/presentation/widgets/sumi_medium_widget_preview.dart';
-import 'package:sumi_app/features/widgets/presentation/widgets/sumi_small_widget_preview.dart';
-import 'package:sumi_app/features/widgets/data/widget_mock_data.dart';
+import 'package:sumi_app/features/home_widgets/data/widget_mock_data.dart';
+import 'package:sumi_app/features/home_widgets/presentation/widgets/sumi_large_widget_preview.dart';
+import 'package:sumi_app/features/home_widgets/presentation/widgets/sumi_medium_widget_preview.dart';
+import 'package:sumi_app/features/home_widgets/presentation/widgets/sumi_small_widget_preview.dart';
 
 class WidgetPreviewScreen extends StatefulWidget {
   const WidgetPreviewScreen({super.key});

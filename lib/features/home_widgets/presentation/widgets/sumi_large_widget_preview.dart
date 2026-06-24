@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:sumi_app/features/widgets/data/sumi_widget_entry.dart';
+import 'package:sumi_app/features/home_widgets/data/sumi_widget_entry.dart';
 
 class SumiLargeWidgetPreview extends StatelessWidget {
   final SumiWidgetEntry entry;
