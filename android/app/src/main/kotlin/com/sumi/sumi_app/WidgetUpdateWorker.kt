@@ -270,6 +270,63 @@ class WidgetUpdateWorker(
     }
 }
 
+object WidgetUpdateWorkerTestUtil {
+    fun timeAgo(isoDate: String): String {
+        return try {
+            val instant = java.time.Instant.parse(isoDate)
+            val diff = java.time.Duration.between(instant, java.time.Instant.now())
+            when {
+                diff.toMinutes() < 60 -> "${diff.toMinutes()}m ago"
+                diff.toHours() < 24 -> "${diff.toHours()}h ago"
+                diff.toDays() < 7 -> "${diff.toDays()}d ago"
+                else -> "${(diff.toDays() / 7)}w ago"
+            }
+        } catch (_: Exception) {
+            ""
+        }
+    }
+
+    fun parseItems(json: String): List<MangaItemPublic> {
+        val root = JSONObject(json)
+        val data = root.optJSONArray("data") ?: return emptyList()
+        val items = mutableListOf<MangaItemPublic>()
+
+        for (i in 0 until data.length()) {
+            val obj = data.getJSONObject(i)
+            val attrs = obj.optJSONObject("attributes") ?: continue
+            val rels = obj.optJSONArray("relationships") ?: JSONArray()
+
+            var coverFileName: String? = null
+            for (j in 0 until rels.length()) {
+                val r = rels.getJSONObject(j)
+                if (r.optString("type") == "cover_art") {
+                    val rAttrs = r.optJSONObject("attributes")
+                    coverFileName = rAttrs?.optString("fileName", null)
+                }
+            }
+
+            val titleMap = attrs.optJSONObject("title") ?: JSONObject()
+            val title = titleMap.optString("en", null)
+                ?: titleMap.keys().asSequence().firstOrNull()?.let { titleMap.optString(it, "Unknown") }
+                ?: "Unknown"
+
+            items.add(MangaItemPublic(
+                id = obj.optString("id", ""),
+                title = title,
+                coverFileName = coverFileName,
+                lastChapter = attrs.optString("lastChapter", null),
+                updatedAt = attrs.optString("updatedAt", null)
+            ))
+        }
+        return items
+    }
+}
+
+data class MangaItemPublic(
+    val id: String, val title: String, val coverFileName: String?,
+    val lastChapter: String?, val updatedAt: String?
+)
+
 private fun timeAgo(isoDate: String): String {
     return try {
         val instant = java.time.Instant.parse(isoDate)
