@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sumi_app/core/errors/failure.dart';
+import 'package:sumi_app/core/logger/logger.dart';
+import 'package:sumi_app/core/providers/logger_provider.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_notifier.dart';
 import 'package:sumi_app/features/manga/data/providers/manga_repository_provider.dart';
 import 'package:sumi_app/features/manga/data/repositories/manga_repository.dart';
@@ -39,10 +42,12 @@ class MangaState {
 
 class MangaNotifier extends Notifier<MangaState> {
   late final MangaRepository _repository;
+  late final Logger _log;
 
   @override
   MangaState build() {
     _repository = ref.read(mangaRepositoryProvider);
+    _log = ref.read(loggerProvider);
     return const MangaState();
   }
 
@@ -85,14 +90,17 @@ class MangaNotifier extends Notifier<MangaState> {
 
     try {
       final manga = await _repository.fetchFollowedManga(token);
+      _log.info('Library loaded: ${manga.length} manga');
       state = state.copyWith(
         followedManga: manga,
         isLibraryLoading: false,
       );
       _repository.updateWidgets(manga);
-    } catch (e) {
+    } catch (e, s) {
+      _log.error('fetchLibrary failed', e, s);
+      final failure = _classify(e);
       state = state.copyWith(
-        error: 'Failed to load library: $e',
+        error: failure.userFacingMessage,
         isLibraryLoading: false,
       );
       if (state.followedManga.isEmpty) {
@@ -105,13 +113,15 @@ class MangaNotifier extends Notifier<MangaState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final results = await _repository.searchManga(query);
+      _log.info('Search "$query": ${results.length} results');
       state = state.copyWith(
         searchResults: results,
         isLoading: false,
       );
-    } catch (e) {
+    } catch (e, s) {
+      _log.error('searchManga failed for "$query"', e, s);
       state = state.copyWith(
-        error: e.toString(),
+        error: _classify(e).userFacingMessage,
         searchResults: [],
         isLoading: false,
       );
@@ -171,6 +181,23 @@ class MangaNotifier extends Notifier<MangaState> {
     if (token != null) {
       await _repository.markChaptersRead(mangaId, chapterIds, token);
     }
+  }
+
+  Failure _classify(Object error) {
+    final msg = error.toString();
+    if (msg.contains('SocketException') || msg.contains('HandshakeException')) {
+      return networkFailure(error);
+    }
+    if (msg.contains('401') || msg.contains('403')) {
+      return authFailure('Session expired. Please log in again.', error);
+    }
+    if (msg.contains('429')) {
+      return apiFailure('Too many requests. Please wait.', error);
+    }
+    if (msg.contains('500') || msg.contains('502') || msg.contains('503')) {
+      return apiFailure('MangaDex is experiencing issues.', error);
+    }
+    return unknownFailure(error);
   }
 }
 

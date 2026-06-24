@@ -1,0 +1,81 @@
+00:00 +0: loading D:/Personal/Sumi/sumi_app/test/features/auth/data/repositories/auth_repository_test.dart
+00:00 +0: D:/Personal/Sumi/sumi_app/test/features/auth/data/repositories/auth_repository_test.dart: AuthRepository isAuthenticated delegates to service
+00:00 +1: D:/Personal/Sumi/sumi_app/test/features/auth/data/repositories/auth_repository_test.dart: AuthRepository accessToken delegates to service
+00:00 +2: D:/Personal/Sumi/sumi_app/test/features/auth/data/repositories/auth_repository_test.dart: AuthRepository buildAuthorizationUrl delegates to service
+00:00 +3: D:/Personal/Sumi/sumi_app/test/features/auth/data/repositories/auth_repository_test.dart: AuthRepository exchangeCode delegates to service and returns null on success
+00:00 +4: D:/Personal/Sumi/sumi_app/test/features/auth/data/repositories/auth_repository_test.dart: AuthRepository initialize calls loadToken
+00:00 +5: D:/Personal/Sumi/sumi_app/test/features/auth/data/repositories/auth_repository_test.dart: AuthRepository logout delegates to service
+00:00 +6: D:/Personal/Sumi/sumi_app/test/features/auth/data/repositories/auth_repository_test.dart: AuthRepository dispose delegates to service
+00:00 +7: D:/Personal/Sumi/sumi_app/test/features/auth/presentation/state/auth_notifier_test.dart: AuthNotifier initial state is uninitialized
+00:00 +8: D:/Personal/Sumi/sumi_app/test/features/auth/presentation/state/auth_notifier_test.dart: AuthNotifier exchangeCode updates state and authenticates
+00:00 +9: D:/Personal/Sumi/sumi_app/test/features/auth/presentation/state/auth_notifier_test.dart: AuthNotifier logout clears authentication
+00:00 +10: D:/Personal/Sumi/sumi_app/test/features/auth/presentation/state/auth_notifier_test.dart: AuthNotifier buildAuthorizationUrl delegates to repository
+00:00 +11: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_background_test.dart: Widget background schedule invokeMethod schedule succeeds
+00:00 +12: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_background_test.dart: Widget background schedule invokeMethod cancel succeeds
+00:00 +13: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_background_test.dart: Widget background schedule schedule does not throw when channel is not set up
+00:00 +14: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_data_test.dart: SumiWidgetData default values
+00:00 +15: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_data_test.dart: SumiWidgetData constructs with all fields
+00:00 +16: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_data_test.dart: MangaWidgetItem default coverUrl is empty
+00:00 +17: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_data_test.dart: ChapterWidgetUpdate constructs correctly
+00:00 +18: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_data_test.dart: WidgetCoverImage constructs with filePath and bytes
+00:01 +19: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_service_test.dart: mockData returns expected structure
+00:01 +20: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_service_test.dart: updateAndroidWidgets saves data and triggers update
+00:01 +21: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/sumi_widget_service_test.dart: updateAndroidWidgets handles null continueReading
+00:01 +22: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/widget_background_service_test.dart: mockData returns 3 updates
+00:01 +23: D:/Personal/Sumi/sumi_app/test/features/home_widgets/data/widget_background_service_test.dart: updateAndroidWidgets saves update data correctly
+00:01 +24: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_large_widget_preview_test.dart: SumiLargeWidgetPreview shows header and updates
+00:02 +25: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_medium_widget_preview_test.dart: SumiMediumWidgetPreview shows title and chapter info
+00:02 +26: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_medium_widget_preview_test.dart: SumiMediumWidgetPreview shows title and chapter info
+00:02 +27: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_medium_widget_preview_test.dart: SumiMediumWidgetPreview shows title and chapter info
+00:02 +28: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_medium_widget_preview_test.dart: SumiMediumWidgetPreview shows title and chapter info
+00:02 +29: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_medium_widget_preview_test.dart: SumiMediumWidgetPreview shows title and chapter info
+00:02 +30: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +31: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +32: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +32 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +32 -1: D:/Personal/Sumi/sumi_app/test/features/manga/data/repositories/manga_repository_test.dart: MangaRepository fetchMangaDetails returns null on error [E]
+  Expected: null
+    Actual: <Instance of 'Manga'>
+  
+  package:matcher                                                         expect
+  package:flutter_test/src/widget_tester.dart 480:18                      expect
+  test\features\manga\data\repositories\manga_repository_test.dart 252:9  main.<fn>.<fn>.<fn>
+  
+00:02 +33 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +34 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +35 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +36 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +37 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +38 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +39 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +40 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +41 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +42 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +43 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +44 -1: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +44 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +44 -2: D:/Personal/Sumi/sumi_app/test/features/manga/data/repositories/manga_repository_test.dart: MangaRepository fetchTotalChapters returns 0 on error [E]
+  Expected: <0>
+    Actual: <5>
+  
+  package:matcher                                                         expect
+  package:flutter_test/src/widget_tester.dart 480:18                      expect
+  test\features\manga\data\repositories\manga_repository_test.dart 346:9  main.<fn>.<fn>.<fn>
+  
+00:02 +45 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +46 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +47 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +48 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +49 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widgets/sumi_small_widget_preview_test.dart: SumiSmallWidgetPreview shows logo and chapter count
+00:02 +50 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +51 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +52 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +53 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +54 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +55 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +56 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +57 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +58 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +59 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +60 -2: D:/Personal/Sumi/sumi_app/test/features/home_widgets/presentation/widget_preview_screen_test.dart: WidgetPreviewScreen renders sections and button
+00:02 +61 -2: Some tests failed.

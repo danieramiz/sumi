@@ -1,3 +1,4 @@
+import 'package:sumi_app/core/logger/logger.dart';
 import 'package:sumi_app/core/storage/preferences_service.dart';
 import 'package:sumi_app/features/home_widgets/data/interfaces/widget_service.dart';
 import 'package:sumi_app/features/home_widgets/data/sumi_widget_data.dart';
@@ -11,14 +12,17 @@ class MangaRepository {
   final MangaService _api;
   final PreferencesServiceBase _prefs;
   final WidgetService? _widgetService;
+  final Logger _log;
 
   MangaRepository({
     required MangaService api,
     required PreferencesServiceBase prefs,
     WidgetService? widgetService,
+    Logger? logger,
   })  : _api = api,
         _prefs = prefs,
-        _widgetService = widgetService;
+        _widgetService = widgetService,
+        _log = logger ?? const Logger(tag: 'MangaRepo');
 
   List<Manga> sortLibrary(List<Manga> manga) {
     final pinned = _prefs.pinnedMangaIds;
@@ -35,14 +39,26 @@ class MangaRepository {
   }
 
   Future<List<Manga>> searchManga(String query, {int limit = 20}) async {
-    final response = await _api.searchManga(title: query, limit: limit);
-    return response.data.map(_fromDto).toList();
+    try {
+      final response = await _api.searchManga(title: query, limit: limit);
+      _log.info('searchManga found ${response.data.length} results for "$query"');
+      return response.data.map(_fromDto).toList();
+    } catch (e, s) {
+      _log.error('searchManga failed for "$query"', e, s);
+      rethrow;
+    }
   }
 
   Future<List<Manga>> fetchFollowedManga(String token,
       {int limit = 100}) async {
-    final response = await _api.getFollowedManga(token, limit: limit);
-    return response.data.map(_fromDto).toList();
+    try {
+      final response = await _api.getFollowedManga(token, limit: limit);
+      _log.info('fetchFollowedManga returned ${response.data.length} entries');
+      return response.data.map(_fromDto).toList();
+    } catch (e, s) {
+      _log.error('fetchFollowedManga failed', e, s);
+      rethrow;
+    }
   }
 
   List<Manga> getMockLibrary() => mockMangaList;
@@ -51,7 +67,8 @@ class MangaRepository {
     try {
       final dto = await _api.getMangaDetails(id);
       return _fromDto(dto);
-    } catch (_) {
+    } catch (e, s) {
+      _log.warning('fetchMangaDetails failed for $id', e, s);
       return null;
     }
   }
@@ -86,8 +103,11 @@ class MangaRepository {
     try {
       final lang = _prefs.language;
       final data = await _api.getMangaAggregate(mangaId, language: lang);
-      return _api.parseTotalChapters(data);
-    } catch (_) {
+      final total = _api.parseTotalChapters(data);
+      _log.debug('fetchTotalChapters for $mangaId: $total');
+      return total;
+    } catch (e, s) {
+      _log.warning('fetchTotalChapters failed for $mangaId', e, s);
       return 0;
     }
   }
@@ -98,6 +118,7 @@ class MangaRepository {
       final lang = _prefs.language;
       final dtos = await _api.getChapters(mangaId,
           limit: limit, offset: offset, ascending: ascending, language: lang);
+      _log.debug('fetchChapters for $mangaId: ${dtos.length} chapters');
       return dtos.map((d) => Chapter(
             id: d.id,
             chapterNumber: d.chapterNumber ?? 0,
@@ -106,7 +127,8 @@ class MangaRepository {
                 d.publishDate != null ? DateTime.tryParse(d.publishDate!) : null,
             isRead: false,
           )).toList();
-    } catch (_) {
+    } catch (e, s) {
+      _log.warning('fetchChapters failed for $mangaId', e, s);
       return [];
     }
   }

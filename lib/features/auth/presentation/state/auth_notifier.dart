@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sumi_app/core/logger/logger.dart';
+import 'package:sumi_app/core/providers/logger_provider.dart';
 import 'package:sumi_app/features/auth/data/providers/auth_repository_provider.dart';
 import 'package:sumi_app/features/auth/data/repositories/auth_repository.dart';
 
@@ -32,36 +34,47 @@ class AuthState {
 
 class AuthNotifier extends Notifier<AuthState> {
   late final AuthRepository _repository;
+  late final Logger _log;
 
   @override
   AuthState build() {
     _repository = ref.read(authRepositoryProvider);
-    ref.onDispose(() => _repository.dispose());
+    _log = ref.read(loggerProvider);
     _init();
     return const AuthState();
-  }
-
-  Future<void> _init() async {
-    await _repository.initialize();
-    state = state.copyWith(initialized: true, isAuthenticated: _repository.isAuthenticated);
   }
 
   String? get accessToken => _repository.accessToken;
 
   String buildAuthorizationUrl() => _repository.buildAuthorizationUrl();
 
+  Future<void> _init() async {
+    await _repository.initialize();
+    state = state.copyWith(
+      initialized: true,
+      isAuthenticated: _repository.isAuthenticated,
+    );
+  }
+
   Future<void> exchangeCode(String code) async {
     state = state.copyWith(isLoading: true, error: null);
     final errorMsg = await _repository.exchangeCode(code);
+    final success = errorMsg == null;
+    if (success) {
+      _log.info('Authentication successful');
+    } else {
+      _log.error('Authentication failed: $errorMsg');
+    }
     state = state.copyWith(
       isLoading: false,
-      isAuthenticated: errorMsg == null && _repository.isAuthenticated,
-      error: errorMsg,
+      isAuthenticated: success && _repository.isAuthenticated,
+      error: success ? null : errorMsg,
     );
   }
 
   Future<void> logout() async {
     await _repository.logout();
+    _log.info('Logged out');
     state = state.copyWith(initialized: true, isAuthenticated: false);
   }
 }
