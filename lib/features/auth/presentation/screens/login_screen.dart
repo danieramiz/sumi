@@ -14,7 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final WebViewController _controller;
   bool _webLoading = true;
   bool _codeProcessed = false;
-  bool _showWebView = false;
+  bool _showWebView = true;
 
   static const _logoPink = Color(0xFFFF4F6D);
 

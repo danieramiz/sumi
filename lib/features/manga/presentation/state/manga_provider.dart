@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:sumi_app/core/storage/preferences_service.dart';
 import 'package:sumi_app/features/auth/presentation/state/auth_provider.dart';
+import 'package:sumi_app/features/home_widgets/data/sumi_widget_service.dart';
+import 'package:sumi_app/features/home_widgets/data/sumi_widget_data.dart';
 import 'package:sumi_app/features/manga/data/mock/mock_data.dart';
 import 'package:sumi_app/features/manga/data/models/manga_dto.dart';
 import 'package:sumi_app/features/manga/data/services/mangadex_service.dart';
@@ -167,6 +169,53 @@ class MangaProvider extends ChangeNotifier {
 
     _isLibraryLoading = false;
     notifyListeners();
+
+    _updateWidgets();
+  }
+
+  void _updateWidgets() {
+    final list = _followedManga;
+    if (list.isEmpty) return;
+
+    final now = DateTime.now();
+    final recentUpdates = list.where((m) =>
+        now.difference(m.lastUpdate).inDays < 7).toList();
+
+    Manga? continueManga;
+    for (final m in list) {
+      if (m.progress > 0 && m.progress < 1.0) {
+        continueManga = m;
+        break;
+      }
+    }
+    continueManga ??= list.first;
+
+    final data = SumiWidgetData(
+      newChapterCount: recentUpdates.length,
+      continueReading: MangaWidgetItem(
+        title: continueManga.title,
+        chapterLabel: continueManga.currentChapter > 0
+            ? 'Ch. ${continueManga.currentChapter.toStringAsFixed(0)}'
+            : 'Reading',
+        coverUrl: continueManga.coverUrl ?? '',
+        progress: continueManga.progress,
+      ),
+      updates: list.take(3).map((m) => ChapterWidgetUpdate(
+        mangaTitle: m.title,
+        chapterLabel: m.currentChapter > 0
+            ? 'Ch. ${m.currentChapter.toStringAsFixed(0)}'
+            : '',
+        timeAgo: _timeAgo(m.lastUpdate),
+      )).toList(),
+    );
+    SumiWidgetService().updateAndroidWidgets(data);
+  }
+
+  String _timeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
   }
 
   Future<void> markChapterRead(String mangaId, String chapterId) async {

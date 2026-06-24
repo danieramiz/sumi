@@ -12,6 +12,7 @@ import 'package:sumi_app/features/manga/presentation/screens/manga_detail_screen
 import 'package:sumi_app/features/manga/presentation/screens/search_screen.dart';
 import 'package:sumi_app/core/routes/hero_detail_route.dart';
 import 'package:sumi_app/features/settings/presentation/screens/settings_screen.dart';
+import 'package:sumi_app/features/home_widgets/presentation/widget_preview_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -105,92 +106,96 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildWelcomeScreen(BuildContext context) {
+    const _logoPink = Color(0xFFFF4F6D);
+
     return Scaffold(
+      backgroundColor: const Color(0xFF0D1117),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Spacer(flex: 2),
-              Text(
-                'Sumi',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontSize: 48,
-                      color: AppColors.accent,
-                    ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Your beautiful manga companion.\nFollow, track, and discover.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.secondaryText,
-                      height: 1.5,
-                    ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: Material(
-                  color: AppColors.accent,
-                  borderRadius: BorderRadius.circular(28),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(28),
-                    onTap: () {
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 48),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Spacer(flex: 2),
+                Image.asset(
+                  'assets/icons/sumi_logo_light.png',
+                  width: 160,
+                  height: 160,
+                ),
+                const SizedBox(height: 28),
+                const Text(
+                  'Sumi',
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Your beautiful manga companion.\nFollow, track, and discover.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.white.withValues(alpha: 0.5),
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: FilledButton(
+                    onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const LoginScreen(),
                         ),
                       );
                     },
-                    child: const Center(
-                      child: Text(
-                        'Sign in with MangaDex',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _logoPink,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
+                    child: const Text('Sign in with MangaDex'),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: AppShadows.subtle,
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(28),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(28),
-                      onTap: () {
-                        setState(() => _showWelcome = false);
-                      },
-                      child: const Center(
-                        child: Text(
-                          'Browse sample data',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.secondaryText,
-                          ),
-                        ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() => _showWelcome = false);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white.withValues(alpha: 0.6),
+                      side: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.15),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                    child: const Text('Browse sample data'),
                   ),
                 ),
-              ),
-              const Spacer(flex: 2),
-            ],
+                const Spacer(flex: 2),
+              ],
+            ),
           ),
         ),
       ),
@@ -323,6 +328,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     context.read<MangaProvider>().refreshSort();
                   },
                 ),
+                _menuItem(
+                  ctx,
+                  Icons.widgets_rounded,
+                  'Widget Preview',
+                  () {
+                    Navigator.of(ctx).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const WidgetPreviewScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
                 if (auth.isAuthenticated)
                   _menuItem(
                     ctx,
