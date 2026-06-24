@@ -13,6 +13,7 @@ class PreferencesService {
 
   bool chaptersAscending = false;
   bool readerScrollMode = false;
+  bool notificationsEnabled = true;
   String language = 'en';
   SortOrder sortOrder = SortOrder.lastUpdated;
   Set<String> pinnedMangaIds = {};
@@ -26,6 +27,7 @@ class PreferencesService {
       final data = jsonDecode(content) as Map<String, dynamic>;
       chaptersAscending = data['chaptersAscending'] as bool? ?? false;
       readerScrollMode = data['readerScrollMode'] as bool? ?? false;
+      notificationsEnabled = data['notificationsEnabled'] as bool? ?? true;
       language = data['language'] as String? ?? 'en';
       sortOrder =
           SortOrder.values.firstWhere((s) => s.name == data['sortOrder'],
@@ -42,6 +44,7 @@ class PreferencesService {
       await file.writeAsString(jsonEncode({
         'chaptersAscending': chaptersAscending,
         'readerScrollMode': readerScrollMode,
+        'notificationsEnabled': notificationsEnabled,
         'language': language,
         'sortOrder': sortOrder.name,
         'pinnedMangaIds': pinnedMangaIds.toList(),
